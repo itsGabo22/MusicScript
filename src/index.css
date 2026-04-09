@@ -1,0 +1,59 @@
+@import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-emerald: #064e3b;
+  --color-brand-emerald-light: #10b981;
+}
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  /* Mesh Gradient Background */
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(at 0% 0%, #dcfce7 0px, transparent 50%),
+    radial-gradient(at 50% 0%, #f0fdf4 0px, transparent 50%),
+    radial-gradient(at 100% 0%, #d1fae5 0px, transparent 50%);
+  color: #0f172a;
+  transition: all 0.5s ease;
+}
+
+body.dark {
+  background-color: #020617;
+  background-image: 
+    radial-gradient(at 0% 0%, #064e3b 0px, transparent 50%),
+    radial-gradient(at 100% 0%, #022c22 0px, transparent 50%);
+  color: #f1f5f9;
+}
+
+#root {
+  width: 100%;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #059669;
+}
