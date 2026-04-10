@@ -31,8 +31,14 @@ export const useLibrary = () => {
   };
 
   const toggleFavorite = async (id: string) => {
+    // Optimistic update
+    setLibrarySongs(prev => prev.map(s => 
+      s.id === id ? { ...s, isFavorite: !s.isFavorite } : s
+    ));
+    
+    // Sync with DB
     await libraryRepo.toggleFavorite(id);
-    await refreshLibrary();
+    // Note: No need to refresh entire library here as we updated it optimistically
   };
 
   const clearLibrary = async () => {

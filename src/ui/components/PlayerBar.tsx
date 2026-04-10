@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Maximize2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Maximize2, ListPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface PlayerBarProps {
@@ -14,6 +14,7 @@ interface PlayerBarProps {
   onSeek: (time: number) => void;
   onVolumeChange: (volume: number) => void;
   onToggleFavorite?: () => void;
+  onAddToPlaylist?: () => void;
 }
 
 const PlayerBar: React.FC<PlayerBarProps> = ({
@@ -27,7 +28,8 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
   onPrev,
   onSeek,
   onVolumeChange,
-  onToggleFavorite
+  onToggleFavorite,
+  onAddToPlaylist
 }) => {
   const formatTime = (time: number) => {
     const mins = Math.floor(time / 60);
@@ -67,35 +69,37 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
       </div>
 
       {/* Center: Controls & Progress */}
-      <div className="flex flex-col items-center gap-2 flex-1 max-w-2xl px-4">
-        <div className="flex items-center gap-4 md:gap-8">
+      <div className="flex flex-col items-center gap-2 flex-1 max-w-2xl px-2 md:px-0">
+        <div className="flex items-center gap-4 sm:gap-8">
+          {/* Favorites Button */}
           <button 
             onClick={onToggleFavorite}
-            className={`p-2 transition-all hover:scale-125 sm:hidden ${currentSong.isFavorite ? 'text-emerald-500' : 'text-[var(--text-muted)]'}`}
+            className={`p-4 -m-2 transition-all active:scale-75 z-[100] ${currentSong.isFavorite ? 'text-emerald-500' : 'text-[var(--text-muted)]'}`}
           >
-            <Heart className={`w-5 h-5 ${currentSong.isFavorite ? 'fill-current' : ''}`} />
+            <Heart className={`w-6 h-6 ${currentSong.isFavorite ? 'fill-current' : ''}`} />
           </button>
           
-          <div className="flex items-center gap-6">
-            <button onClick={onPrev} className="text-[var(--text-muted)] hover:text-emerald-500 transition-colors active:scale-90">
-              <SkipBack className="w-5 h-5 md:w-6 md:h-6 fill-current" />
+          <div className="flex items-center gap-4 sm:gap-8 text-[var(--text-main)]">
+            <button onClick={onPrev} className="p-2 text-[var(--text-muted)] hover:text-emerald-500 transition-colors active:scale-90 z-50">
+              <SkipBack className="w-6 h-6 fill-current" />
             </button>
             <button 
               onClick={onTogglePlay}
-              className="w-12 h-12 md:w-16 md:h-16 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full flex items-center justify-center transition-all active:scale-90 shadow-[0_10px_30px_rgba(16,185,129,0.3)]"
+              className="w-14 h-14 md:w-16 md:h-16 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full flex items-center justify-center transition-all active:scale-90 shadow-[0_10px_30px_rgba(16,185,129,0.3)] z-50"
             >
-              {isPlaying ? <Pause className="w-6 h-6 md:w-8 md:h-8 fill-current" /> : <Play className="w-6 h-6 md:w-8 md:h-8 fill-current ml-1" />}
+              {isPlaying ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 fill-current ml-1" />}
             </button>
-            <button onClick={onNext} className="text-[var(--text-muted)] hover:text-emerald-500 transition-colors active:scale-90">
-              <SkipForward className="w-5 h-5 md:w-6 md:h-6 fill-current" />
+            <button onClick={onNext} className="text-[var(--text-muted)] hover:text-emerald-500 transition-colors active:scale-90 z-50 p-2">
+              <SkipForward className="w-6 h-6 fill-current" />
             </button>
           </div>
 
+          {/* Add to Playlist Button */}
           <button 
-            onClick={onToggleFavorite}
-            className={`hidden sm:block p-2 transition-all hover:scale-125 ${currentSong.isFavorite ? 'text-emerald-500' : 'text-[var(--text-muted)] hover:text-emerald-500'}`}
+            onClick={onAddToPlaylist}
+            className="p-4 -m-2 text-[var(--text-muted)] hover:text-emerald-500 transition-all active:scale-75 z-[100]"
           >
-            <Heart className={`w-6 h-6 ${currentSong.isFavorite ? 'fill-current' : ''}`} />
+            <ListPlus className="w-6 h-6" />
           </button>
         </div>
         
@@ -124,10 +128,10 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
       </div>
 
       {/* Right: Utilities */}
-      <div className="flex items-center justify-end gap-3 md:gap-6 w-auto sm:w-[25%] lg:w-[30%]">
-        <div className="hidden md:flex items-center gap-3 w-24 lg:w-32">
-          <Volume2 className="w-4 h-4 text-[var(--text-muted)]" />
-          <div className="relative flex-1 h-1 bg-[var(--border-color)] rounded-full group cursor-pointer">
+      <div className="hidden sm:flex items-center justify-end gap-2 md:gap-6 w-auto sm:w-[25%] lg:w-[30%]">
+        <div className="flex items-center gap-1.5 md:gap-3 w-12 sm:w-24 lg:w-32">
+          <Volume2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-[var(--text-muted)] shrink-0" />
+          <div className="relative flex-1 h-1 bg-[var(--border-color)] rounded-full group cursor-pointer hidden sm:block">
             <input 
               type="range"
               min="0"
@@ -145,7 +149,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
         </div>
         <button 
           onClick={toggleFullscreen}
-          className="p-2 text-[var(--text-muted)] hover:text-emerald-500 transition-colors active:scale-90"
+          className="p-1.5 md:p-2 text-[var(--text-muted)] hover:text-emerald-500 transition-colors active:scale-90"
         >
           <Maximize2 className="w-4 h-4 md:w-5 md:h-5" />
         </button>

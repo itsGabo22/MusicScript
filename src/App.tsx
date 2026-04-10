@@ -11,6 +11,7 @@ import AppShell from './ui/components/AppShell';
 import PlayerBar from './ui/components/PlayerBar';
 import CreatePlaylistModal from './ui/components/CreatePlaylistModal';
 import { audioAnalyzer } from './infrastructure/services/AudioAnalyzerService';
+import PlaylistPicker from './ui/components/PlaylistPicker';
 
 type ViewMode = 'modern' | 'ipod' | 'cassette';
 
@@ -23,15 +24,27 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
   const [activeView, setActiveView] = useState('library');
+  const [pickingForTrackId, setPickingForTrackId] = useState<string | null>(null);
+
+  // Sync current selection with library updates
+  const activeSong = useMemo(() => {
+    if (!player.currentSong) return null;
+    return library.librarySongs.find(s => s.id === player.currentSong?.id) || player.currentSong;
+  }, [player.currentSong, library.librarySongs]);
+
+  // Auto-close picker on navigation
+  useEffect(() => {
+    setPickingForTrackId(null);
+  }, [activeView]);
 
   // Compute filtered songs based on sidebar selection
   const filteredSongs = useMemo(() => {
     if (activeView === 'library') return library.librarySongs;
     if (activeView === 'favorites') return library.getFavorites();
-    
+
     const playlist = playlists.playlists.find(p => p.id === activeView);
     if (!playlist) return library.librarySongs;
-    
+
     return library.librarySongs.filter(s => playlist.songIds.includes(s.id));
   }, [activeView, library.librarySongs, playlists.playlists]);
 
@@ -43,6 +56,20 @@ function App() {
   const handleAddSong = async (file: File, metadata: { title: string, artist: string, position: 'start' | 'end' | number }) => {
     const song = await library.addToLibrary(file, metadata);
     await player.addTrack(song, metadata.position);
+  };
+
+  const handleDeleteTrack = async (id: string, permanent: boolean) => {
+    if (permanent) {
+      // Remove from Library (DB + Disk)
+      await library.removeFromLibrary(id);
+      // Also remove from player queue if present
+      player.removeTrack(id);
+    } else {
+      // Remove from current Playlist only
+      if (activeView !== 'library' && activeView !== 'favorites') {
+        await playlists.removeTrackFromPlaylist(activeView, id);
+      }
+    }
   };
 
   const handleViewChange = (viewId: string) => {
@@ -66,15 +93,15 @@ function App() {
   }, [player.isPlaying]);
 
   return (
-    <AppShell 
-      player={player} 
+    <AppShell
+      player={player}
       playlists={playlists}
       onViewChange={handleViewChange}
       onCreatePlaylist={() => setIsPlaylistModalOpen(true)}
     >
       {/* Top Floating Controls */}
       <div className="absolute top-10 right-10 flex gap-3 z-50">
-        <button 
+        <button
           onClick={() => {
             const modes: ViewMode[] = ['modern', 'ipod', 'cassette'];
             const nextIdx = (modes.indexOf(viewMode) + 1) % modes.length;
@@ -86,7 +113,7 @@ function App() {
           {viewMode === 'ipod' && <Smartphone className="w-5 h-5" />}
           {viewMode === 'cassette' && <Disc className="w-5 h-5" />}
         </button>
-        <button 
+        <button
           onClick={toggleTheme}
           className="p-3 rounded-2xl bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color)] text-[var(--text-main)] hover:text-emerald-500 transition-all shadow-2xl"
         >
@@ -96,22 +123,40 @@ function App() {
 
       <div className={`w-full h-full flex items-center justify-center`}>
         {viewMode === 'modern' && (
-          <DefaultPlayer 
-            player={{ ...player, songs: filteredSongs, selectTrack: handleSelectSong }} 
-            onAddClick={() => setIsModalOpen(true)} 
+          <DefaultPlayer
+            player={{ ...player, songs: filteredSongs, selectTrack: handleSelectSong }}
+            onAddClick={() => setIsModalOpen(true)}
             onToggleFavorite={library.toggleFavorite}
+            onDeleteTrack={handleDeleteTrack}
+            activeView={activeView}
             playlists={playlists.playlists}
             onAddToPlaylist={playlists.addTrackToPlaylist}
+            pickingForTrackId={pickingForTrackId}
+            onPickingChange={setPickingForTrackId}
           />
         )}
         {viewMode === 'ipod' && <IpodPlayer player={player} />}
         {viewMode === 'cassette' && <CassettePlayer player={player} />}
+
+        {/* Global Playlist Picker Overlay */}
+        <PlaylistPicker
+          isOpen={!!pickingForTrackId}
+          playlists={playlists.playlists}
+          onSelect={(playlistId) => {
+            if (pickingForTrackId) {
+              playlists.addTrackToPlaylist(playlistId, pickingForTrackId);
+              setPickingForTrackId(null);
+            }
+          }}
+          onClose={() => setPickingForTrackId(null)}
+          isAtBottom={true}
+        />
       </div>
 
       {/* Persistent Bottom Bar (Modern Only for now) */}
       {viewMode === 'modern' && player.currentSong && (
-        <PlayerBar 
-          currentSong={player.currentSong}
+        <PlayerBar
+          currentSong={activeSong}
           isPlaying={player.isPlaying}
           currentTime={player.currentTime}
           duration={player.duration}
@@ -121,24 +166,25 @@ function App() {
           onPrev={player.prev}
           onSeek={player.seek}
           onVolumeChange={player.updateVolume}
-          onToggleFavorite={() => library.toggleFavorite(player.currentSong!.id)}
+          onToggleFavorite={() => activeSong && library.toggleFavorite(activeSong.id)}
+          onAddToPlaylist={() => activeSong && setPickingForTrackId(activeSong.id)}
         />
       )}
 
-      <AddSongModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <AddSongModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         onAdd={handleAddSong}
         playlistSize={player.songs.length}
       />
 
-      <CreatePlaylistModal 
+      <CreatePlaylistModal
         isOpen={isPlaylistModalOpen}
         onClose={() => setIsPlaylistModalOpen(false)}
         onCreate={playlists.createPlaylist}
       />
 
-      <audio 
+      <audio
         ref={player.audioRef}
         src={player.currentSong?.audioUrl}
         onTimeUpdate={player.handlers.onTimeUpdate}

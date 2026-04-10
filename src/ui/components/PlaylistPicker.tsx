@@ -24,10 +24,10 @@ const PlaylistPicker: React.FC<PlaylistPickerProps> = ({
         <>
           <div className="fixed inset-0 z-[110]" onClick={onClose} />
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: isAtBottom ? -10 : 10 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: isAtBottom ? -10 : 10 }}
-            className={`absolute right-0 ${isAtBottom ? 'bottom-12' : 'top-12'} w-64 bg-[var(--bg-glass)] backdrop-blur-3xl border border-[var(--border-color)] rounded-3xl shadow-2xl z-[120] overflow-hidden p-2`}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="fixed bottom-32 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-[var(--bg-glass)] backdrop-blur-3xl border border-[var(--border-color)] rounded-[32px] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] z-[200] overflow-hidden p-2"
           >
             <div className="p-3 border-b border-[var(--border-color)] mb-2">
               <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Guardar en Playlist</p>

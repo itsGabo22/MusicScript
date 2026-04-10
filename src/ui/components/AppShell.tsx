@@ -66,7 +66,7 @@ const AppShell: React.FC<AppShellProps> = ({
           <div className="w-10" /> {/* Spacer */}
         </div>
         
-        <div className="flex-1 overflow-hidden p-6 md:p-10">
+        <div className="flex-1 overflow-y-auto md:overflow-hidden p-6 md:p-10 custom-scrollbar">
           {children}
         </div>
       </main>
