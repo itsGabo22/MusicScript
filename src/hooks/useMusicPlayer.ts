@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { DoublyLinkedList } from '../core/datastructures/DoublyLinkedList';
 import type { Song } from '../core/entities/Song';
 import { PlaylistLoader } from '../infrastructure/loaders/PlaylistLoader';
@@ -9,37 +9,40 @@ export const useMusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
   
-  // Use a ref to persist the DLL instance without causing re-renders unless we want to
   const playlist = useMemo(() => new DoublyLinkedList<Song>(), []);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize
-  useEffect(() => {
-    const loadData = async () => {
-      const defaultSongs = await PlaylistLoader.loadDefault();
-      playlist.clear(); // Important: Avoid duplicates if useEffect runs twice
-      defaultSongs.forEach(song => playlist.add(song));
-      syncState();
-    };
-    loadData();
-    
-    // Cleanup URL objects if needed
-    return () => {
-      songs.forEach(s => {
-        if (s.source === 'local') URL.revokeObjectURL(s.audioUrl);
-      });
-    };
-  }, []);
-
-  // Sync internal DLL state with React state for UI
-  const syncState = () => {
+  const syncState = useCallback(() => {
     setSongs(playlist.toArray());
     setCurrentSong(playlist.getCurrent());
+  }, [playlist]);
+
+  const setQueue = (newSongs: Song[]) => {
+    playlist.clear();
+    newSongs.forEach(s => playlist.add(s));
+    syncState();
   };
 
+  const updateVolume = (val: number) => {
+    setVolume(val);
+    if (audioRef.current) audioRef.current.volume = val;
+  };
+
+  // Load from Library on initialization
+  useEffect(() => {
+    const initialize = async () => {
+      const savedSongs = await PlaylistLoader.loadFromLibrary();
+      playlist.clear();
+      savedSongs.forEach(s => playlist.add(s));
+      syncState();
+    };
+    initialize();
+  }, [playlist, syncState]);
+
   const play = () => {
-    audioRef.current?.play();
+    audioRef.current?.play().catch(console.error);
     setIsPlaying(true);
   };
 
@@ -48,16 +51,13 @@ export const useMusicPlayer = () => {
     setIsPlaying(false);
   };
 
-  const togglePlay = () => {
-    if (isPlaying) pause();
-    else play();
-  };
+  const togglePlay = () => isPlaying ? pause() : play();
 
   const next = () => {
     const song = playlist.next();
     if (song) {
       setCurrentSong(song);
-      if (isPlaying) setTimeout(() => play(), 0);
+      if (isPlaying) setTimeout(() => play(), 50);
     }
   };
 
@@ -65,44 +65,32 @@ export const useMusicPlayer = () => {
     const song = playlist.prev();
     if (song) {
       setCurrentSong(song);
-      if (isPlaying) setTimeout(() => play(), 0);
+      if (isPlaying) setTimeout(() => play(), 50);
     }
   };
 
-  const addSongs = async (files: FileList) => {
-    const newSongs = await PlaylistLoader.fromFiles(files);
-    newSongs.forEach(s => playlist.add(s));
+  const addTrack = async (song: Song, position: 'start' | 'end' | number = 'end') => {
+    if (position === 'start') {
+      playlist.addAtStart(song);
+    } else if (typeof position === 'number') {
+      playlist.addAt(song, position);
+    } else {
+      playlist.add(song);
+    }
     syncState();
   };
 
-  const removeSong = (id: string) => {
+  const removeTrack = (id: string) => {
     playlist.remove(id);
     syncState();
   };
 
-  const selectSong = (id: string) => {
+  const selectTrack = (id: string) => {
     const song = playlist.setCurrentById(id);
     if (song) {
       setCurrentSong(song);
-      if (isPlaying) setTimeout(() => play(), 0);
+      if (isPlaying) setTimeout(() => play(), 50);
     }
-  };
-
-  // Audio event handlers
-  const onTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-    }
-  };
-
-  const onLoadedMetadata = () => {
-    if (audioRef.current) {
-      setDuration(audioRef.current.duration);
-    }
-  };
-
-  const onEnded = () => {
-    next();
   };
 
   const seek = (time: number) => {
@@ -118,18 +106,21 @@ export const useMusicPlayer = () => {
     isPlaying,
     currentTime,
     duration,
+    volume,
     audioRef,
     togglePlay,
     next,
     prev,
-    addSongs,
-    removeSong,
-    selectSong,
+    addTrack,
+    removeTrack,
+    setQueue,
+    selectTrack,
     seek,
+    updateVolume,
     handlers: {
-      onTimeUpdate,
-      onLoadedMetadata,
-      onEnded
+      onTimeUpdate: () => audioRef.current && setCurrentTime(audioRef.current.currentTime),
+      onLoadedMetadata: () => audioRef.current && setDuration(audioRef.current.duration),
+      onEnded: () => next()
     }
   };
 };

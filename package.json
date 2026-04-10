@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "dexie": "^4.4.2",
     "framer-motion": "^12.38.0",
-    "lucide-react": "^1.7.0",
+    "jsmediatags": "^3.9.7",
+    "lucide-react": "^1.8.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },

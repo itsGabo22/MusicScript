@@ -1,141 +1,168 @@
-import React from 'react';
-import { Play, Pause, SkipBack, SkipForward, Plus, Trash2, Music } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Trash2, Music, Heart, ListPlus } from 'lucide-react';
 import type { Song } from '../../core/entities/Song';
+import type { PlaylistRecord } from '../../infrastructure/persistence/MusicDatabase';
+import PlaylistPicker from '../components/PlaylistPicker';
+import ConfirmModal from '../components/ConfirmModal';
 
 interface PlayerProps {
-  player: any; // Using any for brevity in this setup, ideally type it
+  player: any; 
+  onAddClick: () => void;
+  onToggleFavorite?: (id: string) => void;
+  playlists: PlaylistRecord[];
+  onAddToPlaylist: (playlistId: string, trackId: string) => void;
+  pickingForTrackId: string | null;
+  onPickingChange: (id: string | null) => void;
+  onDeleteTrack: (id: string, permanent: boolean) => void;
+  activeView: string;
 }
 
-const DefaultPlayer: React.FC<PlayerProps> = ({ player }) => {
+const DefaultPlayer: React.FC<PlayerProps> = ({ 
+  player, 
+  onAddClick, 
+  onToggleFavorite,
+  playlists,
+  onAddToPlaylist,
+  pickingForTrackId,
+  onPickingChange,
+  onDeleteTrack,
+  activeView
+}) => {
   const { 
     songs, 
     currentSong, 
     isPlaying, 
-    currentTime, 
-    duration, 
-    togglePlay, 
-    next, 
-    prev, 
-    addSongs, 
-    removeSong, 
-    selectSong, 
-    seek 
+    removeTrack, 
+    selectTrack
   } = player;
 
-  const formatTime = (time: number) => {
-    const mins = Math.floor(time / 60);
-    const secs = Math.floor(time % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const [deletingTrackId, setDeletingTrackId] = useState<string | null>(null);
+  const isLibraryView = activeView === 'library';
+
+  const confirmDelete = () => {
+    if (deletingTrackId) {
+      onDeleteTrack(deletingTrackId, isLibraryView);
+      setDeletingTrackId(null);
+    }
   };
 
   return (
-    <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 bg-white dark:bg-black/60 backdrop-blur-3xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden p-8 border border-slate-100 dark:border-white/10 transition-all duration-500">
+    <div className="w-full h-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 lg:gap-12 items-center justify-start lg:justify-center animate-in fade-in zoom-in duration-700 pt-4 lg:pt-0">
       
-      {/* Left: Now Playing */}
-      <div className="md:col-span-1 flex flex-col items-center">
-        <div className="relative w-64 h-64 mb-6 group">
+      {/* Left Panel: Mega Cover Info - Static on Desktop */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center lg:h-full py-4 lg:pb-32">
+        <div className="relative w-full max-w-[300px] lg:max-w-[380px] aspect-square mb-6 lg:mb-10 group">
+          <div className="absolute -inset-4 bg-emerald-500/10 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
           <img 
-            src={currentSong?.coverUrl || 'https://picsum.photos/400/400'} 
+            src={currentSong?.coverUrl || 'https://picsum.photos/800/800'} 
             alt="Cover" 
-            className={`w-full h-full object-cover rounded-2xl shadow-xl transition-transform duration-700 ${isPlaying ? 'scale-105' : 'scale-100'}`}
+            className={`w-full h-full object-cover rounded-[48px] shadow-[0_40px_100px_rgba(0,0,0,0.1)] dark:shadow-[0_40px_100px_rgba(0,0,0,0.7)] transition-all duration-1000 ${isPlaying ? 'scale-[1.02]' : 'scale-100'}`}
           />
-          {!isPlaying && (
-            <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-               <Play className="w-12 h-12 text-white fill-current" />
-            </div>
-          )}
+          <div className="absolute inset-0 rounded-[48px] ring-1 ring-inset ring-black/5 dark:ring-white/10" />
         </div>
         
-        <h2 className="text-2xl font-black text-center truncate w-full text-slate-900 dark:text-white uppercase tracking-tight">{currentSong?.title || 'No Song Selected'}</h2>
-        <p className="text-emerald-600 dark:text-emerald-400 font-bold mb-6 tracking-wide">{currentSong?.artist || 'Unknown'}</p>
-
-        {/* Controls */}
-        <div className="flex items-center gap-6 mb-8">
-          <button onClick={prev} className="p-3 text-slate-900 dark:text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-600 rounded-full transition-all">
-            <SkipBack className="w-7 h-7 fill-current" />
-          </button>
-          <button 
-            onClick={togglePlay}
-            className="w-16 h-16 bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-500 dark:hover:bg-emerald-400 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-90"
-          >
-            {isPlaying ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 fill-current ml-1" />}
-          </button>
-          <button onClick={next} className="p-3 text-slate-900 dark:text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-600 rounded-full transition-all">
-            <SkipForward className="w-7 h-7 fill-current" />
-          </button>
+        <div className="w-full text-center space-y-3 px-4">
+          <h1 className="text-3xl lg:text-5xl font-black text-[var(--text-main)] uppercase tracking-tighter leading-none italic">{currentSong?.title || 'Seleccionar Pista'}</h1>
+          <p className="text-base lg:text-xl font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.3em]">{currentSong?.artist || 'Autor Desconocido'}</p>
         </div>
+      </div>
 
-        {/* Progress */}
-        <div className="w-full">
-          <input 
-            type="range"
-            min="0"
-            max={duration || 0}
-            value={currentTime}
-            onChange={(e) => seek(Number(e.target.value))}
-            className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-          />
-          <div className="flex justify-between mt-2 text-xs font-mono font-black text-slate-900 dark:text-slate-400">
-            <span>{formatTime(currentTime)}</span>
-            <span>{formatTime(duration)}</span>
+      {/* Right Panel: Scrollable Playlist */}
+      <div className="w-full lg:w-1/2 lg:h-full flex flex-col py-0 lg:py-10">
+        <div className="bg-[var(--bg-card)] backdrop-blur-2xl rounded-[48px] border border-[var(--border-color)] flex flex-col overflow-visible lg:overflow-hidden shadow-2xl h-auto lg:h-full transition-all duration-500">
+          <div className="p-6 lg:p-10 border-b border-[var(--border-color)] flex flex-col sm:flex-row justify-between items-center gap-6 bg-emerald-500/5">
+            <div className="text-center sm:text-left">
+              <h3 className="text-2xl font-black text-[var(--text-main)] uppercase tracking-tighter">En esta vista</h3>
+              <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.3em] mt-1">{songs.length} CANCIONES FILTRADAS</p>
+            </div>
+            <button 
+              onClick={onAddClick}
+              className="w-full sm:w-auto group flex items-center gap-3 bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
+            >
+              <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+              Añadir Música
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-visible lg:overflow-y-auto px-4 lg:px-8 py-6 pb-40 custom-scrollbar">
+            {songs.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center opacity-20">
+                <Music className="w-24 h-24 mb-6 text-[var(--text-main)]" />
+                <p className="font-black uppercase tracking-[0.3em] text-[var(--text-main)]">Sin resultados</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {songs.map((song: Song, index) => (
+                  <div 
+                    key={song.id}
+                    onClick={() => selectTrack(song.id)}
+                    className={`group flex items-center gap-4 p-4 rounded-[28px] cursor-pointer transition-all duration-500 ${
+                      currentSong?.id === song.id 
+                      ? 'bg-emerald-500/10 border border-emerald-500/30' 
+                      : 'hover:bg-emerald-500/5 border border-transparent'
+                    }`}
+                  >
+                    <span className="w-6 text-[10px] font-black text-[var(--text-muted)] group-hover:text-emerald-500 transition-colors">
+                      {(index + 1).toString().padStart(2, '0')}
+                    </span>
+                    <div className="relative shrink-0">
+                      <img src={song.coverUrl} alt="" className="w-12 h-12 md:w-16 rounded-[18px] object-cover shadow-2xl" />
+                      {currentSong?.id === song.id && isPlaying && (
+                        <div className="absolute inset-0 bg-emerald-500/20 rounded-[18px] animate-pulse" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0 pr-4 flex flex-col justify-center">
+                      <div className="relative overflow-hidden whitespace-nowrap">
+                        <p className={`font-black text-base md:text-lg transition-colors ${currentSong?.id === song.id ? 'text-emerald-600 dark:text-emerald-400 animate-marquee-slow' : 'text-[var(--text-main)] group-hover:animate-marquee-slow'}`}>
+                          {song.title}
+                        </p>
+                      </div>
+                      <div className="relative overflow-hidden whitespace-nowrap">
+                        <p className="text-[9px] md:text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-[0.2em]">{song.artist}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-0 md:gap-1 relative z-10 shrink-0">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); onPickingChange(song.id); }}
+                        className="p-2 md:p-3 text-[var(--text-muted)] hover:text-emerald-500 transition-all hover:scale-125 select-none"
+                      >
+                        <ListPlus className="w-4 h-4 md:w-5 md:h-5" />
+                      </button>
+
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(song.id); }}
+                        className={`p-3 transition-all hover:scale-125 ${song.isFavorite ? 'text-emerald-500' : 'text-[var(--text-muted)] hover:text-emerald-500'}`}
+                      >
+                        <Heart className={`w-5 h-5 ${song.isFavorite ? 'fill-current' : ''}`} />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setDeletingTrackId(song.id); }}
+                        className="p-2 md:p-3 text-[var(--text-muted)] hover:text-red-500 transition-all hover:scale-125"
+                      >
+                        <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Right: Playlist */}
-      <div className="md:col-span-2 flex flex-col h-[500px]">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-black flex items-center gap-2 text-slate-900 dark:text-white uppercase tracking-wider">
-            <Music className="w-6 h-6 text-emerald-600" />
-            Playlist
-          </h3>
-          <label className="flex items-center gap-2 bg-slate-900 dark:bg-emerald-900/40 text-white dark:text-emerald-100 px-5 py-2.5 rounded-2xl cursor-pointer hover:bg-emerald-700 dark:hover:bg-emerald-800 transition-all font-bold text-sm shadow-md">
-            <Plus className="w-4 h-4" />
-            <span>Add Music</span>
-            <input type="file" multiple className="hidden" accept="audio/*" onChange={(e) => e.target.files && addSongs(e.target.files)} />
-          </label>
-        </div>
-
-        <div className="flex-1 overflow-y-auto pr-3 custom-scrollbar">
-          {songs.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600">
-              <Music className="w-16 h-16 mb-4 opacity-10" />
-              <p className="font-bold uppercase tracking-widest text-sm opacity-50">Empty Library</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {songs.map((song: Song) => (
-                <div 
-                  key={song.id}
-                  onClick={() => selectSong(song.id)}
-                  className={`group flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all ${
-                    currentSong?.id === song.id 
-                    ? 'bg-emerald-50/80 dark:bg-emerald-900/40 border-2 border-emerald-500/20 dark:border-emerald-500/10 shadow-[0_4px_20px_rgba(16,185,129,0.1)]' 
-                    : 'bg-slate-50/30 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 hover:translate-x-1'
-                  }`}
-                >
-                  <div className="relative">
-                    <img src={song.coverUrl} alt="" className="w-14 h-14 rounded-xl object-cover shadow-lg" />
-                    {currentSong?.id === song.id && isPlaying && (
-                      <div className="absolute inset-0 bg-emerald-500/20 rounded-xl animate-pulse" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`font-black text-base truncate ${currentSong?.id === song.id ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-900 dark:text-slate-300'}`}>{song.title}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-tight">{song.artist}</p>
-                  </div>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); removeSong(song.id); }}
-                    className="opacity-0 group-hover:opacity-100 p-2.5 text-slate-400 hover:text-red-500 transition-all hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Confirmation Modal for Deletion */}
+      <ConfirmModal 
+        isOpen={!!deletingTrackId}
+        title={isLibraryView ? "Eliminar de Biblioteca" : "Quitar de Playlist"}
+        message={isLibraryView 
+          ? "¿Estás seguro de que quieres eliminar esta canción permanentemente? Esta acción borrará el archivo y no se puede deshacer."
+          : "¿Quieres quitar esta canción de la playlist? El archivo original seguirá disponible en tu biblioteca."
+        }
+        confirmText={isLibraryView ? "Eliminar para siempre" : "Quitar ahora"}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeletingTrackId(null)}
+        isDestructive={true}
+      />
     </div>
   );
 };
