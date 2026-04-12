@@ -9,7 +9,7 @@ export const useLibrary = () => {
 
   const refreshLibrary = useCallback(async () => {
     setIsLoading(true);
-    const songs = await PlaylistLoader.loadFromLibrary();
+    const songs = await libraryRepo.getAllTracks();
     setLibrarySongs(songs);
     setIsLoading(false);
   }, []);
@@ -18,11 +18,17 @@ export const useLibrary = () => {
     refreshLibrary();
   }, [refreshLibrary]);
 
-  const addToLibrary = async (file: File, metadata: { title: string, artist: string }) => {
+  const addToLibrary = async (file: File, metadata: { title: string, artist: string, coverUrl?: string | null, position: 'start' | 'end' | number }) => {
     const song = await PlaylistLoader.fromFile(file, metadata);
-    await libraryRepo.saveTrack(song, file);
+    // Position handling is now deep-integrated in the repo
+    await libraryRepo.saveTrack(song, file, metadata.position);
     await refreshLibrary();
     return song;
+  };
+
+  const updateTrack = async (id: string, metadata: Partial<Song>, position?: 'start' | 'end' | number) => {
+    await libraryRepo.updateTrackMetadata(id, metadata, position);
+    await refreshLibrary();
   };
 
   const removeFromLibrary = async (id: string) => {
@@ -35,10 +41,8 @@ export const useLibrary = () => {
     setLibrarySongs(prev => prev.map(s => 
       s.id === id ? { ...s, isFavorite: !s.isFavorite } : s
     ));
-    
     // Sync with DB
     await libraryRepo.toggleFavorite(id);
-    // Note: No need to refresh entire library here as we updated it optimistically
   };
 
   const clearLibrary = async () => {
@@ -46,18 +50,15 @@ export const useLibrary = () => {
     await refreshLibrary();
   };
 
-  const getFavorites = () => {
-    return librarySongs.filter(s => s.isFavorite);
-  };
-
   return {
     librarySongs,
     isLoading,
     addToLibrary,
+    updateTrack,
     removeFromLibrary,
     toggleFavorite,
     clearLibrary,
     refreshLibrary,
-    getFavorites
+    getFavorites: () => librarySongs.filter(s => s.isFavorite)
   };
 };

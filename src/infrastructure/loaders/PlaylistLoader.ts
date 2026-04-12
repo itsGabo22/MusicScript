@@ -1,5 +1,6 @@
 import type { Song } from "../../core/entities/Song";
 import { libraryRepo } from "../persistence/LibraryRepository";
+import { ExternalMetadataService } from "../services/ExternalMetadataService";
 // @ts-ignore - jsmediatags doesn't always have perfect types in some environments
 import jsmediatags from 'jsmediatags';
 
@@ -16,21 +17,32 @@ export class PlaylistLoader {
     await libraryRepo.saveTrack(song, file);
   }
 
-  static async fromFile(file: File, manualMetadata: { title: string, artist: string }): Promise<Song> {
+  static async fromFile(file: File, manualMetadata: { title: string, artist: string, coverUrl?: string | null }): Promise<Song> {
     const tags = await this.extractTags(file);
     
+    const title = manualMetadata.title || tags.title || file.name.replace(/\.[^/.]+$/, "");
+    const artist = manualMetadata.artist || tags.artist || "Unknown Artist";
+    let coverUrl = manualMetadata.coverUrl || tags.coverUrl;
+
+    if (!coverUrl) {
+      const externalCover = await ExternalMetadataService.searchCover(title, artist);
+      if (externalCover) {
+        coverUrl = externalCover;
+      }
+    }
+
     return {
       id: crypto.randomUUID(),
-      title: manualMetadata.title || tags.title || file.name.replace(/\.[^/.]+$/, ""),
-      artist: manualMetadata.artist || tags.artist || "Unknown Artist",
+      title,
+      artist,
       duration: 0,
       audioUrl: URL.createObjectURL(file),
       source: 'local',
-      coverUrl: tags.coverUrl || `https://picsum.photos/seed/${Math.random()}/400/400`
+      coverUrl: coverUrl || `https://picsum.photos/seed/${Math.random()}/400/400`
     };
   }
 
-  private static extractTags(file: File): Promise<{ title?: string, artist?: string, coverUrl?: string }> {
+  public static extractTags(file: File): Promise<{ title?: string, artist?: string, coverUrl?: string }> {
     return new Promise((resolve) => {
       new jsmediatags.Reader(file).read({
         onSuccess: (tag: any) => {

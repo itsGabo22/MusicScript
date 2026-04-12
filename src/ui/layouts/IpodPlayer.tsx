@@ -1,103 +1,111 @@
 import React from 'react';
-import { Play, Pause, SkipBack, SkipForward, Menu } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Play, Pause, SkipBack, SkipForward, Circle } from 'lucide-react';
 
 interface PlayerProps {
   player: any;
 }
 
 const IpodPlayer: React.FC<PlayerProps> = ({ player }) => {
-  const { currentSong, isPlaying, togglePlay, next, prev } = player;
+  const { currentSong, isPlaying, togglePlay, next, prev, currentTime, duration } = player;
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
     <motion.div 
-      initial={{ y: 50, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      className="relative w-80 h-[500px] bg-gradient-to-br from-[#f8fafc] via-[#e2e8f0] to-[#94a3b8] dark:from-[#1e293b] dark:via-[#0f172a] dark:to-[#020617] rounded-[50px] shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] dark:shadow-[10px_10px_30px_#000] p-6 flex flex-col items-center border-[6px] border-[#CBD5E1] dark:border-[#1e293b]"
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      className="w-[340px] h-[540px] bg-ipod-silver rounded-[50px] p-7 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.6)] flex flex-col items-center border-t-4 border-white/40 ring-1 ring-black/20"
     >
-      {/* Screen Container */}
-      <div className="w-full h-48 bg-[#a8dadc] dark:bg-[#1a2e2e] rounded-lg shadow-inner mb-8 p-4 flex flex-col items-center justify-center overflow-hidden border-4 border-[#457b9d] dark:border-[#064e3b] relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-white/10 pointer-events-none" />
-        
-        {currentSong ? (
-          <div className="flex flex-col items-center w-full relative z-10">
-            <img 
-              src={currentSong.coverUrl} 
-              alt="" 
-              className={`w-24 h-24 mb-3 rounded-lg shadow-lg border border-black/10 transition-transform ${isPlaying ? 'scale-105' : 'scale-100'}`} 
+        {/* Screen LCD Panel */}
+        <div className="w-full h-52 bg-ipod-screen rounded-xl border-[8px] border-zinc-700 shadow-lcd-inner p-5 flex flex-col relative overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+            
+            <div className="flex justify-between items-center text-[10px] font-black text-zinc-900 tracking-widest uppercase mb-2">
+                <span className="opacity-60">MusicScript</span>
+                <span className="flex items-center gap-1">
+                   <div className="w-4 h-2 border border-zinc-900 rounded-sm relative">
+                      <div className="h-full bg-zinc-900 w-3/4" />
+                      <div className="absolute -right-1 top-0.5 w-0.5 h-1 bg-zinc-900" />
+                   </div>
+                </span>
+            </div>
+
+            <div className="flex-grow flex flex-col items-center justify-center gap-2">
+                {currentSong ? (
+                   <>
+                    <motion.p 
+                      key={currentSong.id}
+                      initial={{ y: 5, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className="font-black text-xl text-zinc-900 truncate w-full text-center leading-tight tracking-tight italic"
+                    >
+                      {currentSong.title}
+                    </motion.p>
+                    <p className="text-[11px] text-zinc-800 font-bold uppercase tracking-widest opacity-70">
+                      {currentSong.artist}
+                    </p>
+                    {/* Small cover preview on screen */}
+                    {currentSong.coverUrl && (
+                      <img 
+                        src={currentSong.coverUrl} 
+                        alt="cover" 
+                        className="w-16 h-16 mt-2 rounded-sm border border-zinc-900/40 shadow-lg grayscale-[0.2]" 
+                      />
+                    )}
+                   </>
+                ) : (
+                  <p className="text-sm font-bold text-zinc-800 opacity-40 uppercase tracking-widest italic">
+                    Inserte Disco
+                  </p>
+                )}
+            </div>
+
+            {/* Retro Progress Bar */}
+            <div className="w-full h-3 bg-zinc-900/10 rounded-full mt-4 p-[1.5px] border border-zinc-900/30">
+                <motion.div 
+                   animate={{ width: `${progress}%` }}
+                   className="h-full bg-zinc-900 rounded-full" 
+                />
+            </div>
+        </div>
+
+        {/* Click Wheel Premium */}
+        <div className="mt-12 w-56 h-56 bg-[#FAFAFA] rounded-full relative shadow-retro-wheel border border-zinc-300 flex items-center justify-center select-none group">
+            {/* Center Select Button */}
+            <button 
+               onClick={togglePlay}
+               className="w-22 h-22 bg-gradient-to-br from-white to-zinc-200 rounded-full border border-zinc-300 shadow-md z-10 active:scale-95 active:bg-zinc-300 transition-all outline-none"
             />
-            <div className="text-center w-full">
-              <p className="text-sm font-bold truncate text-slate-800 dark:text-emerald-300 px-2 leading-tight">{currentSong.title}</p>
-              <p className="text-[10px] text-slate-600 dark:text-emerald-500/80 font-mono truncate uppercase tracking-tighter">{currentSong.artist}</p>
-            </div>
-            {/* Minimal Progress Bar */}
-            <div className="w-full h-2 bg-black/10 dark:bg-black/40 mt-3 rounded-full overflow-hidden border border-black/5">
-               <motion.div 
-                animate={{ width: `${(player.currentTime / player.duration) * 100}%` }}
-                className="h-full bg-emerald-600 dark:bg-emerald-400"
-               />
-            </div>
-          </div>
-        ) : (
-          <div className="text-center relative z-10">
-            <Menu className="w-8 h-8 mx-auto text-slate-500/50 mb-2" />
-            <p className="text-xs font-mono text-slate-600 dark:text-emerald-600/50">MusicScript v1.0</p>
-          </div>
-        )}
-      </div>
+            
+            <button 
+              onClick={() => {}} 
+              className="absolute top-6 text-zinc-400 font-black text-[10px] tracking-[0.3em] uppercase hover:text-zinc-600 transition-colors"
+            >
+              MENU
+            </button>
+            <button 
+              onClick={togglePlay}
+              className="absolute bottom-6 text-zinc-400 hover:text-zinc-600 transition-all active:scale-90"
+            >
+              {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
+            </button>
+            <button 
+              onClick={prev}
+              className="absolute left-6 text-zinc-400 hover:text-zinc-600 transition-all active:scale-90"
+            >
+              <SkipBack className="w-5 h-5 fill-current" />
+            </button>
+            <button 
+              onClick={next}
+              className="absolute right-6 text-zinc-400 hover:text-zinc-600 transition-all active:scale-90"
+            >
+              <SkipForward className="w-5 h-5 fill-current" />
+            </button>
+        </div>
 
-      {/* Click Wheel Area */}
-      <div 
-        onWheel={(e) => {
-          if (e.deltaY > 0) next();
-          else prev();
-        }}
-        className="relative w-56 h-56 bg-white dark:bg-slate-900 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.1)] flex items-center justify-center border-4 border-[#f1f5f9] dark:border-[#1e293b] cursor-ns-resize group"
-      >
-        <div className="absolute inset-0 rounded-full group-hover:bg-black/5 dark:group-hover:bg-white/5 transition-colors pointer-events-none" />
-        
-        {/* Wheel Buttons */}
-        <button 
-          onClick={() => {}} 
-          className="absolute top-4 text-slate-800 dark:text-slate-600 font-black text-xs uppercase hover:text-emerald-600 transition-colors"
-        >
-          Menu
-        </button>
-        
-        <button 
-          onClick={next}
-          className="absolute right-4 text-slate-800 dark:text-slate-600 hover:text-emerald-600 transition-colors"
-        >
-          <SkipForward className="w-6 h-6 fill-current shadow-sm" />
-        </button>
-
-        <button 
-          onClick={prev}
-          className="absolute left-4 text-slate-800 dark:text-slate-600 hover:text-emerald-600 transition-colors"
-        >
-          <SkipBack className="w-6 h-6 fill-current shadow-sm" />
-        </button>
-
-        <button 
-          onClick={togglePlay}
-          className="absolute bottom-4 text-slate-800 dark:text-slate-600 hover:text-emerald-600 transition-colors"
-        >
-          <div className="flex gap-1 justify-center items-center">
-            <Play className="w-3 h-3 fill-current" />
-            <Pause className="w-3 h-3 fill-current" />
-          </div>
-        </button>
-
-        {/* Center Button */}
-        <button 
-          onClick={togglePlay}
-          className="w-20 h-20 bg-gradient-to-br from-white to-[#e2e8f0] dark:from-[#334155] dark:to-[#0f172a] rounded-full shadow-md border-2 border-slate-200 dark:border-slate-800 active:scale-95 transition-transform"
-        />
-      </div>
-
-      <div className="mt-8 text-[11px] font-mono font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em]">
-        iPod
-      </div>
+        <div className="mt-8 text-[11px] font-black text-white/50 uppercase tracking-[0.5em] italic">
+           Classic
+        </div>
     </motion.div>
   );
 };

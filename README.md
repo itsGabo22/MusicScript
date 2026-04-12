@@ -1,5 +1,19 @@
 # 🎵 MusicScript: Advanced Music Player
 
+## 🚀 Despliegue con Vercel
+
+MusicScript está optimizado para ser desplegado en **Vercel** de forma instantánea:
+
+1.  **Conecta tu repositorio**: Sube el código a GitHub.
+2.  **Importa en Vercel**: Selecciona el repositorio.
+3.  **Configuración Automática**: Vercel detectará que es un proyecto **Vite**.
+4.  **Listo**: Tu reproductor estará en vivo con HTTPS y carga ultra rápida.
+
+> [!TIP]
+> Dado que MusicScript utiliza **IndexedDB** para la persistencia, todos los datos de tus usuarios se guardarán de forma segura en sus propios navegadores, sin necesidad de configurar bases de datos externas pesadas.
+
+---
+
 **MusicScript** es un reproductor de música moderno y de alto rendimiento construido con **React**, **TypeScript** y **Vite**. Este proyecto fue desarrollado como parte del **Taller de Listas Doblemente Enlazadas**, combinando conceptos fundamentales de estructuras de datos con una interfaz de usuario premium y las herramientas de desarrollo más rápidas del ecosistema actual.
 
 ---
@@ -80,7 +94,9 @@ Para asegurar que las canciones no se pierdan al recargar la página o reiniciar
 
 ---
 
-## ✨ Funcionalidades Extra (Fase 1)
+---
+
+## ✨ Funcionalidades Extra (Fase 1- Finalizada)
 
 Más allá de lo básico, MusicScript ofrece:
 
@@ -93,10 +109,44 @@ Más allá de lo básico, MusicScript ofrece:
 
 ---
 
-## 📈 Bitácora de Desarrollo
+## ⚡ Funcionalidades Avanzadas (Fase 2 - Finalizada)
 
-- **Fase 1 (Actual):** Implementación del motor DLL, estructura de persistencia, interfaz moderna responsiva y gestión de canciones.
-- **Fase 2 (Próximamente):** Conexión con APIs de metadatos, lógica avanzada para modos retro y editor de audio integrado.
+
+La Fase 2 elevó a MusicScript de ser un reproductor básico a una aplicación de audio de nivel profesional, integrando algoritmos avanzados y refinamientos de UX:
+
+1. **Ordenamiento Manual Persistente (Estructuras de Datos):**
+   - Implementación de **Fractional Indexing** ($O(1)$) para permitir el movimiento de canciones a cualquier posición (Inicio, Fin o Índice X) de forma quirúrgica.
+   - Persistencia determinista en IndexedDB: el orden se mantiene exactamente igual tras recargar la página.
+2. **Motor de Letras Premium:**
+   - **Sincronización Proactiva**: Algoritmo de scroll tipo "persecución" que mantiene la línea activa siempre en el centro vertical.
+   - **Estética de Vanguardia**: Uso de `mask-image` en CSS para degradados de transparencia suaves, eliminando cortes bruscos en el texto.
+   - **Multi-API Sync**: Integración con **LRCLIB** (Lyrics Real-time) y **Lyrics.ovh**.
+3. **Visualizador "Holograma":**
+   - Análisis de frecuencias de audio en tiempo real mediante `Web Audio API`.
+   - Renderizado dinámico de curvas SVG ("Holograma") que nacen y se fusionan con la barra de progreso.
+4. **Guía de Usuario Interactiva:**
+   - Sección instructiva integrada con enlaces directos a conversores seguros para poblar la biblioteca desde YouTube y Spotify.
 
 ---
-*Desarrollado para el curso de Estructuras de Datos - 2026*
+
+## 🛠️ Patrones de Software y Estructuras de Datos
+
+| Concepto | Aplicación en MusicScript |
+| :--- | :--- |
+| **DLL (Lista Doble)** | Gestión de la cola de reproducción circular y navegación bidireccional inmediata. |
+| **Fractional Indexing** | Algoritmo utilizado para el reordenamiento de la biblioteca sin necesidad de re-indexar miles de registros. |
+| **Repository Pattern** | Capa de abstracción (`LibraryRepository`) que separa la lógica de negocio del almacenamiento físico (Dexie/IndexedDB). |
+| **Observer Pattern** | Sincronización en tiempo real entre el estado del reproductor y los componentes de visualización (Lyrics/Visualizer). |
+| **Clean Architecture** | Separación clara entre `Core` (entidades/estructuras), `Infrastructure` (servicios/persistencia) y `UI` (componentes). |
+
+---
+
+## 📈 Bitácora de Desarrollo
+
+- **Fase 1:** Motor DLL, estructura de persistencia local, interfaz moderna responsiva y gestión básica de temas. ✅
+- **Fase 2:** Ordenamiento persistente avanzado, visualizador holográfico, sistema de letras sincronizadas y guía interactiva. ✅
+- **Fase 3 (Bonus):** El sistema es ahora funcionalmente completo y listo para la entrega final del taller. ✅
+
+---
+*Desarrollado para el curso de Estructuras de Datos - Gabriel Paz 2026*
+

@@ -105,6 +105,19 @@ export class DoublyLinkedList<T extends { id: string }> {
     return false;
   }
 
+  // UPDATE METADATA SURGICALLY
+  public updateValue(id: string, newValue: Partial<T>): boolean {
+    let temp = this.head;
+    while (temp) {
+      if (temp.value.id === id) {
+        temp.value = { ...temp.value, ...newValue };
+        return true;
+      }
+      temp = temp.next;
+    }
+    return false;
+  }
+
   // Move forward
   public next(): T | null {
     if (this.current && this.current.next) {

@@ -1,83 +1,127 @@
 @import "tailwindcss";
-@variant dark (&:where(.dark, .dark *));
-
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
-}
-
-.animate-marquee-slow {
-  display: inline-block;
-  padding-left: 0;
-  animation: marquee 15s linear infinite;
-  animation-play-state: paused;
-}
-
-.group:hover .animate-marquee-slow {
-  animation-play-state: running;
-}
-
-@theme {
-  --color-brand-emerald: #064e3b;
-  --color-brand-emerald-light: #10b981;
-}
 
 :root {
-  --bg-shell: #f8fafc;
-  --bg-sidebar: rgba(255, 255, 255, 0.7);
-  --bg-card: rgba(255, 255, 255, 0.8);
+  --bg-main: #f8fafc;
+  --bg-sidebar: rgba(255, 255, 255, 0.8);
+  --bg-card: rgba(255, 255, 255, 0.9);
   --bg-glass: rgba(255, 255, 255, 0.7);
   --text-main: #0f172a;
   --text-muted: #64748b;
-  --border-color: rgba(0, 0, 0, 0.08);
-
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --border-color: rgba(0, 0, 0, 0.05);
+  --accent-color: #10b981;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: var(--bg-shell);
-  color: var(--text-main);
-  transition: all 0.5s ease;
-}
-
-body.dark {
-  --bg-shell: #020617;
-  --bg-sidebar: rgba(15, 23, 42, 0.4);
-  --bg-card: rgba(255, 255, 255, 0.03);
-  --bg-glass: rgba(2, 6, 23, 0.7);
-  --text-main: #f1f5f9;
+.dark {
+  --bg-main: #020617;
+  --bg-sidebar: rgba(15, 23, 42, 0.8);
+  --bg-card: rgba(30, 41, 59, 0.9);
+  --bg-glass: rgba(15, 23, 42, 0.7);
+  --text-main: #f8fafc;
   --text-muted: #94a3b8;
-  --border-color: rgba(255, 255, 255, 0.1);
-
-  background-color: var(--bg-shell);
-  color: var(--text-main);
+  --border-color: rgba(255, 255, 255, 0.05);
+  --accent-color: #10b981;
 }
 
-#root {
-  width: 100%;
+@layer base {
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 500ms;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
 }
 
-/* Custom Scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+/* CUSTOM SCROLLBARS */
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #e2e8f0;
+    border-radius: 9999px;
+  }
+  .dark &::-webkit-scrollbar-thumb {
+    background-color: #1e293b;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(16, 185, 129, 0.5);
+  }
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+@utility lyrics-scroll {
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(16, 185, 129, 0.2);
+    border-radius: 9999px;
+  }
+  /* Remove scroll-behavior: smooth here because JS handles it for sync precision */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior: contain;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #10b981;
-  border-radius: 10px;
+/* PERFORMANCE & SCROLL UTILITIES */
+@utility smooth-scroll {
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #059669;
+@utility optimize-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+@utility content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 500px;
+}
+
+/* ANIMATIONS */
+@keyframes holographic {
+  0% { transform: translateY(100%); opacity: 0.3; }
+  50% { transform: translateY(-50%); opacity: 0.8; }
+  100% { transform: translateY(-100%); opacity: 0.3; }
+}
+
+@utility animate-holographic {
+  animation: holographic 3s ease-in-out infinite;
+}
+
+/* DESIGN ELEMENTS */
+@utility glass {
+  backdrop-filter: blur(64px);
+  background-color: var(--bg-glass);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+@utility glass-emerald {
+  backdrop-filter: blur(40px);
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+@utility font-black {
+  font-weight: 900;
+}
+
+/* MARQUEE ANIMATION FOR OVERFLOW TITLES */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@utility animate-marquee-slow {
+  animation: marquee 15s linear infinite;
 }
