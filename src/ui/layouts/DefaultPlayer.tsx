@@ -172,7 +172,9 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
                       <img src={song.coverUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-400">
-                        <Music className="w-6 h-6" />
+                        <div className="w-6 h-6 opacity-30">
+                          <MusicScriptLogo showText={false} />
+                        </div>
                       </div>
                     )}
                     {currentSong?.id === song.id && (

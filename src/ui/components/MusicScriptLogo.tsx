@@ -1,5 +1,3 @@
-import React from 'react';
-
 const MusicScriptLogo = ({ className = "w-full h-full", showText = true }: { className?: string, showText?: boolean }) => (
   <svg 
     viewBox="0 0 400 400" 

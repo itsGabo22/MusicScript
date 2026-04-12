@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Music2 } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface LyricLine {
   time: number;
@@ -29,7 +29,6 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
   coverUrl
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const activeLineRef = useRef<HTMLParagraphElement>(null);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const lastUserInteraction = useRef<number>(0);
 
