@@ -198,8 +198,9 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
         </button>
       )}
 
-      <div className="mt-4 pt-4 border-t border-white/5 text-center text-[8px] font-black text-white/10 uppercase tracking-widest italic">
-        OVH LYRICS ENGINE v3.0
+      <div className="mt-4 pt-4 border-t border-white/5 text-center flex flex-col gap-1 items-center">
+        <p className="text-[8px] font-black text-white/20 uppercase tracking-widest italic">MUSICSCRIPT LYRICS SYSTEM v3.0</p>
+        <p className="text-[7px] font-bold text-emerald-500/30 uppercase tracking-[0.2em]">Powered by Genius & LRCLIB</p>
       </div>
     </motion.div>
   );

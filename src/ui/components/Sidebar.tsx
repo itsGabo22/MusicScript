@@ -1,5 +1,5 @@
 import React from 'react';
-import { Music, Heart, ListMusic, Plus, Library, Trash2, X, Sun, Moon, LayoutGrid, Smartphone, Disc } from 'lucide-react';
+import { Music, Heart, ListMusic, Plus, Library, Trash2, X, Sun, Moon, LayoutGrid, Smartphone, Disc, HelpCircle } from 'lucide-react';
 import type { PlaylistRecord } from '../../infrastructure/persistence/MusicDatabase';
 
 interface SidebarProps {
@@ -98,6 +98,15 @@ const Sidebar: React.FC<SidebarProps> = ({
               </div>
             ))}
           </div>
+        </div>
+        {/* Help / Guide */}
+        <div className="space-y-1 pt-4">
+          <NavItem
+            icon={<HelpCircle className="w-5 h-5" />}
+            label="¿Cómo Utilizar?"
+            active={activeView === 'guide'}
+            onClick={() => onViewChange('guide')}
+          />
         </div>
       </nav>
 

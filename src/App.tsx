@@ -10,6 +10,7 @@ import AppShell from './ui/components/AppShell';
 import PlayerBar from './ui/components/PlayerBar';
 import CreatePlaylistModal from './ui/components/CreatePlaylistModal';
 import PlaylistPicker from './ui/components/PlaylistPicker';
+import GuideView from './ui/views/GuideView';
 import { LyricsService } from './infrastructure/services/LyricsService';
 import { audioAnalyzer } from './infrastructure/services/AudioAnalyzerService';
 import type { Song } from './core/entities/Song';
@@ -40,6 +41,11 @@ function App() {
   const lastQueueFingerprint = useRef<string>('');
 
   useEffect(() => {
+    // FIXED: Only update the player queue if the active view is a music container.
+    // This prevents static views like 'guide' from clearing the player's memory.
+    const isMusicView = activeView === 'library' || activeView === 'favorites' || playlists.playlists.some(p => p.id === activeView);
+    if (!isMusicView) return;
+
     let filteredSongs: Song[] = [];
     
     if (activeView === 'favorites') {
@@ -203,7 +209,7 @@ function App() {
       >
         <div className="flex flex-col h-full relative">
           <main className={`flex-1 w-full lg:overflow-hidden relative pt-4 lg:pt-0 flex flex-col ${viewMode !== 'modern' ? 'items-center justify-center p-4' : ''}`}>
-            {viewMode === 'modern' && (
+            {viewMode === 'modern' && activeView !== 'guide' && (
               <DefaultPlayer 
                 player={player} 
                 onToggleFavorite={handleToggleFavorite}
@@ -228,6 +234,7 @@ function App() {
                 }}
               />
             )}
+            {activeView === 'guide' && <GuideView />}
             {viewMode === 'ipod' && <IpodPlayer player={player} />}
             {viewMode === 'cassette' && <CassettePlayer player={player} />}
           </main>
