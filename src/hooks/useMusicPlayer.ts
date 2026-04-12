@@ -25,6 +25,12 @@ export const useMusicPlayer = () => {
     syncState();
   };
 
+  const updateTrackMetadata = (id: string, metadata: Partial<Song>) => {
+    if (playlist.updateValue(id, metadata)) {
+      syncState();
+    }
+  };
+
   const updateVolume = (val: number) => {
     setVolume(val);
     if (audioRef.current) audioRef.current.volume = val;
@@ -114,6 +120,7 @@ export const useMusicPlayer = () => {
     addTrack,
     removeTrack,
     setQueue,
+    updateTrackMetadata,
     selectTrack,
     seek,
     updateVolume,

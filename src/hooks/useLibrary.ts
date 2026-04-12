@@ -18,7 +18,7 @@ export const useLibrary = () => {
     refreshLibrary();
   }, [refreshLibrary]);
 
-  const addToLibrary = async (file: File, metadata: { title: string, artist: string }) => {
+  const addToLibrary = async (file: File, metadata: { title: string, artist: string, coverUrl?: string | null }) => {
     const song = await PlaylistLoader.fromFile(file, metadata);
     await libraryRepo.saveTrack(song, file);
     await refreshLibrary();

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Music, User, ListOrdered } from 'lucide-react';
+import { X, Upload, Music, User, ListOrdered, Loader2, Image as ImageIcon } from 'lucide-react';
+import { PlaylistLoader } from '../../infrastructure/loaders/PlaylistLoader';
 
 interface AddSongModalProps {
   isOpen: boolean;
@@ -13,15 +14,31 @@ const AddSongModal: React.FC<AddSongModalProps> = ({ isOpen, onClose, onAdd, pla
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [artist, setArtist] = useState('');
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [isExtracting, setIsExtracting] = useState(false);
   const [positionType, setPositionType] = useState<'start' | 'end' | 'index'>('end');
   const [index, setIndex] = useState(0);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
-      // Auto-fill title from filename
-      setTitle(selectedFile.name.replace(/\.[^/.]+$/, ""));
+      setIsExtracting(true);
+
+      try {
+        const tags = await PlaylistLoader.extractTags(selectedFile);
+        if (tags.title) setTitle(tags.title);
+        else setTitle(selectedFile.name.replace(/\.[^/.]+$/, ""));
+        
+        if (tags.artist) setArtist(tags.artist);
+        if (tags.coverUrl) setCoverUrl(tags.coverUrl);
+        else setCoverUrl(null);
+      } catch (err) {
+        console.error("Error extracting tags:", err);
+        setTitle(selectedFile.name.replace(/\.[^/.]+$/, ""));
+      } finally {
+        setIsExtracting(false);
+      }
     }
   };
 
@@ -32,6 +49,7 @@ const AddSongModal: React.FC<AddSongModalProps> = ({ isOpen, onClose, onAdd, pla
     onAdd(file, {
       title,
       artist,
+      coverUrl,
       position: positionType === 'index' ? index : positionType
     });
 
@@ -39,6 +57,7 @@ const AddSongModal: React.FC<AddSongModalProps> = ({ isOpen, onClose, onAdd, pla
     setFile(null);
     setTitle('');
     setArtist('');
+    setCoverUrl(null);
     onClose();
   };
 
@@ -73,10 +92,30 @@ const AddSongModal: React.FC<AddSongModalProps> = ({ isOpen, onClose, onAdd, pla
                   required={!file}
                 />
                 <div className={`p-8 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${file ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/20' : 'border-slate-200 dark:border-slate-700 group-hover:border-emerald-400'}`}>
-                  <Upload className={`w-10 h-10 ${file ? 'text-emerald-500' : 'text-slate-400'}`} />
-                  <p className="text-sm font-bold text-center text-slate-600 dark:text-slate-300">
-                    {file ? file.name : 'Click or drop MP3 file here'}
-                  </p>
+                  {isExtracting ? (
+                    <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
+                  ) : file ? (
+                    <div className="flex items-center gap-4 w-full">
+                      <div className="w-16 h-16 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center overflow-hidden shrink-0 shadow-lg">
+                        {coverUrl ? (
+                          <img src={coverUrl} alt="Preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <ImageIcon className="w-6 h-6 text-slate-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-black text-slate-800 dark:text-white truncate">{file.name}</p>
+                        <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Listo para cargar</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="w-10 h-10 text-slate-400" />
+                      <p className="text-sm font-bold text-center text-slate-600 dark:text-slate-300">
+                        Click or drop MP3 file here
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
 
