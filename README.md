@@ -1,13 +1,6 @@
 # 🎵 MusicScript: Advanced Music Player
 
-## 🚀 Despliegue con Vercel
-
-MusicScript está optimizado para ser desplegado en **Vercel** de forma instantánea:
-
-1.  **Conecta tu repositorio**: Sube el código a GitHub.
-2.  **Importa en Vercel**: Selecciona el repositorio.
-3.  **Configuración Automática**: Vercel detectará que es un proyecto **Vite**.
-4.  **Listo**: Tu reproductor estará en vivo con HTTPS y carga ultra rápida.
+**MusicScript** es un reproductor de música moderno y de alto rendimiento construido con **React**, **TypeScript** y **Vite**. Este proyecto fue desarrollado como parte del **Taller de Listas Doblemente Enlazadas**, combinando conceptos fundamentales de estructuras de datos con una interfaz de usuario premium y las herramientas de desarrollo más rápidas del ecosistema actual.
 
 > [!TIP]
 > Dado que MusicScript utiliza **IndexedDB** para la persistencia, todos los datos de tus usuarios se guardarán de forma segura en sus propios navegadores, sin necesidad de configurar bases de datos externas pesadas.
@@ -151,11 +144,14 @@ La tercera entrega consagra a MusicScript no solo como un reproductor, sino como
 | Concepto | Aplicación en MusicScript |
 | :--- | :--- |
 | **DLL (Lista Doble)** | Gestión de la cola de reproducción circular y navegación bidireccional inmediata. |
+| **Hash Map / Mem Caché** | Algoritmo de mapeo de llaves `O(1)` (`blobUrlCache`) para la estabilización y retención temporal de punteros Blob en el DOM, previniendo micro-cortes. |
 | **Fractional Indexing** | Algoritmo utilizado para el reordenamiento de la biblioteca sin necesidad de re-indexar miles de registros. |
-| **Repository Pattern** | Capa de abstracción (`LibraryRepository`) que separa la lógica de negocio del almacenamiento físico (Dexie/IndexedDB). |
-| **Observer Pattern** | Sincronización en tiempo real entre el estado del reproductor y los componentes de visualización (Lyrics/Visualizer). |
-| **Decorator Pattern** | Encadenamiento en tiempo de ejecución de nodos Web Audio API (`BiquadFilterNode`) para armar el Ecualizador paramétrico sin romper el flujo principal Analyzer -> Destination. |
-| **Clean Architecture** | Separación clara entre `Core` (entidades/estructuras), `Infrastructure` (servicios/persistencia) y `UI` (componentes). |
+| **Decorator Pattern** | Encadenamiento dinámico en tiempo de ejecución de nodos Web Audio API (`BiquadFilterNode`) para inyectar el Ecualizador paramétrico sin alterar el Analyzer principal. |
+| **Observer Pattern** | Sincronización proactiva entre el estado del reproductor y los componentes visuales (Holograma/Lyrics). |
+| **Factory Pattern** | Carga e instanciación de objetos `Song` leyendo los metadatos binarios (ID33) a través de `PlaylistLoader`. |
+| **Singleton Pattern** | Unicidad global en servicios centrales estáticos como `AudioEditorService` y la Base de Datos IndexedDB (`MusicDatabase`). |
+| **Repository Pattern** | Capa de abstracción (`LibraryRepository`) que separa la lógica del dominio del motor de almacenamiento físico. |
+| **Clean Architecture** | Separación granular entre las capas `Core`, `Infrastructure` y de presentación `UI`. |
 
 ---
 
