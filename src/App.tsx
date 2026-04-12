@@ -6,6 +6,7 @@ import DefaultPlayer from './ui/layouts/DefaultPlayer';
 import IpodPlayer from './ui/layouts/IpodPlayer';
 import CassettePlayer from './ui/layouts/CassettePlayer';
 import AddSongModal from './ui/components/AddSongModal';
+import { SongEditorModal } from './ui/components/SongEditorModal';
 import AppShell from './ui/components/AppShell';
 import PlayerBar from './ui/components/PlayerBar';
 import CreatePlaylistModal from './ui/components/CreatePlaylistModal';
@@ -29,6 +30,7 @@ function App() {
   const [activeView, setActiveView] = useState('library');
   const [pickingForTrackId, setPickingForTrackId] = useState<string | null>(null);
   const [editingTrack, setEditingTrack] = useState<Song | null>(null);
+  const [trimmingTrack, setTrimmingTrack] = useState<Song | null>(null);
   
   // Lyrics State
   const [activeLyrics, setActiveLyrics] = useState<{ plain: string | null; synced: string | null } | null>(null);
@@ -220,6 +222,7 @@ function App() {
                    setEditingTrack(song);
                    setIsModalOpen(true);
                 }}
+                onTrimTrack={(song) => setTrimmingTrack(song)}
                 activeView={activeView}
                 isLyricsOpen={isLyricsOpen}
                 onFetchLyrics={handleFetchLyrics}
@@ -289,6 +292,16 @@ function App() {
         isOpen={isPlaylistModalOpen}
         onClose={() => setIsPlaylistModalOpen(false)}
         onCreate={playlists.createPlaylist}
+      />
+
+      <SongEditorModal 
+        song={trimmingTrack}
+        isOpen={!!trimmingTrack}
+        onClose={() => setTrimmingTrack(null)}
+        onSuccess={() => {
+          library.refreshLibrary();
+          setTrimmingTrack(null);
+        }}
       />
 
       <PlaylistPicker 

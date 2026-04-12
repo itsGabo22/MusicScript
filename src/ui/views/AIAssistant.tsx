@@ -26,7 +26,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ songs, favorites, playlists, 
   const [tempSettings, setTempSettings] = useState({ name: botName, persona: botPersona, photo: botPhoto });
 
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', text: `¡Hola! Soy ${botName}. Puedo recomendarte música según tu humor, darte datos curiosos de artistas o ayudarte a descubrir nuevas canciones. ¿Qué te apecese hoy?` }
+    { role: 'ai', text: `¡Hola! Soy ${botName}. Puedo recomendarte música, darte datos curiosos o ayudarte a descubrir canciones según tu humor.\n\n💡 _Dato curioso:_ Puedes **personalizar mi nombre y mi personalidad** tocando el ícono de engranaje (⚙️) que se encuentra aquí arriba.` }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);

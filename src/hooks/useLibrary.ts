@@ -3,6 +3,8 @@ import type { Song } from '../core/entities/Song';
 import { libraryRepo } from '../infrastructure/persistence/LibraryRepository';
 import { PlaylistLoader } from '../infrastructure/loaders/PlaylistLoader';
 
+let blobUrlCache = new Map<string, string>();
+
 export const useLibrary = () => {
   const [librarySongs, setLibrarySongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -10,11 +12,18 @@ export const useLibrary = () => {
   const refreshLibrary = useCallback(async () => {
     setIsLoading(true);
     const tracks = await libraryRepo.getAllTracks();
-    // Re-generate Blob URLs since they are revoked on refresh
-    const songsWithUrls = tracks.map(track => ({
-      ...track,
-      audioUrl: URL.createObjectURL(track.audioBlob)
-    }));
+    
+    // Use cached Blob URLs if available to prevent the <audio> tag from abruptly reloading
+    const songsWithUrls = tracks.map(track => {
+      if (!blobUrlCache.has(track.id)) {
+        blobUrlCache.set(track.id, URL.createObjectURL(track.audioBlob));
+      }
+      return {
+        ...track,
+        audioUrl: blobUrlCache.get(track.id)!
+      };
+    });
+    
     setLibrarySongs(songsWithUrls);
     setIsLoading(false);
   }, []);

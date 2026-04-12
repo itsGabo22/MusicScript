@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Maximize2, ListPlus } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Maximize2, ListPlus, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { audioAnalyzer } from '../../infrastructure/services/AudioAnalyzerService';
+import { EqualizerModal } from './EqualizerModal';
 
 interface PlayerBarProps {
   currentSong: any;
@@ -33,6 +34,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
   onAddToPlaylist
 }) => {
   const [visualData, setVisualData] = useState<number[]>(new Array(16).fill(0));
+  const [isEQOpen, setIsEQOpen] = useState(false);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -140,6 +142,13 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
           >
             <ListPlus className="w-6 h-6" />
           </button>
+          
+          <button 
+            onClick={() => setIsEQOpen(!isEQOpen)}
+            className={`p-2 lg:hidden transition-all active:scale-90 rounded-full z-[100] ${isEQOpen ? 'text-emerald-500 bg-emerald-500/10' : 'text-[var(--text-muted)] hover:text-emerald-500'}`}
+          >
+            <SlidersHorizontal className="w-5 h-5" />
+          </button>
         </div>
         
         {/* SUPER PROGRESS BAR AREA */}
@@ -220,12 +229,19 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
           </div>
         </div>
         <button 
+          onClick={() => setIsEQOpen(!isEQOpen)}
+          className={`p-2 transition-all active:scale-90 rounded-full ${isEQOpen ? 'text-emerald-500 bg-emerald-500/10' : 'text-[var(--text-muted)] hover:text-emerald-500'}`}
+        >
+          <SlidersHorizontal className="w-5 h-5" />
+        </button>
+        <button 
           onClick={toggleFullscreen}
           className="p-2 text-[var(--text-muted)] hover:text-emerald-500 transition-all active:scale-90"
         >
           <Maximize2 className="w-5 h-5" />
         </button>
       </div>
+      <EqualizerModal isOpen={isEQOpen} onClose={() => setIsEQOpen(false)} />
     </motion.div>
   );
 };
