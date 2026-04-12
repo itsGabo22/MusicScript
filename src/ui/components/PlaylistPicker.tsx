@@ -8,15 +8,13 @@ interface PlaylistPickerProps {
   playlists: PlaylistRecord[];
   onSelect: (playlistId: string) => void;
   onClose: () => void;
-  isAtBottom?: boolean;
 }
 
 const PlaylistPicker: React.FC<PlaylistPickerProps> = ({ 
   isOpen, 
   playlists, 
   onSelect, 
-  onClose,
-  isAtBottom 
+  onClose
 }) => {
   return (
     <AnimatePresence>

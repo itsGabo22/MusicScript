@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Music, User, ListOrdered, Loader2, Image as ImageIcon, Save } from 'lucide-react';
+import { X, Upload, Music, User, ListOrdered, Loader2, Save } from 'lucide-react';
 import { PlaylistLoader } from '../../infrastructure/loaders/PlaylistLoader';
 import type { Song } from '../../core/entities/Song';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Video, ExternalLink, Download, FileAudio, Info, Music as MusicIcon, HelpCircle } from 'lucide-react';
+import { ExternalLink, Download, FileAudio, Info } from 'lucide-react';
 import MusicScriptLogo from '../components/MusicScriptLogo';
 
 const GuideView: React.FC = () => {
