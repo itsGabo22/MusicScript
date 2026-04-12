@@ -248,6 +248,8 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
                 </motion.div>
               ))
             )}
+            {/* Mobile Spacer to prevent PlayerBar overlap */}
+            <div className="h-44 md:hidden" />
           </div>
         </div>
       </div>

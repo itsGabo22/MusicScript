@@ -105,7 +105,7 @@ const AppShell: React.FC<AppShellProps> = ({
         </div>
         
         {/* Main Content container - Reduced padding to expand content upwards */}
-        <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6 lg:p-4 pb-32 md:pb-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6 lg:p-4 pb-48 md:pb-6 custom-scrollbar">
           {children}
         </div>
       </main>
