@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Heart, Trash2, ListMusic, Plus, MoreVertical, Edit2 } from 'lucide-react';
+import { Play, Heart, Trash2, ListMusic, Plus, MoreVertical, Edit2, Scissors } from 'lucide-react';
 import type { Song } from '../../core/entities/Song';
 import LyricsDisplay from '../components/LyricsDisplay';
 import AmbientVisualizer from '../components/AmbientVisualizer';
@@ -12,7 +12,8 @@ interface DefaultPlayerProps {
   onDeleteTrack: (id: string) => void;
   onPickingChange: (id: string | null) => void;
   onAddClick: () => void;
-  onEditTrack: (song: Song) => void; // NEW: Edit handler
+  onEditTrack: (song: Song) => void;
+  onTrimTrack?: (song: Song) => void;
   activeView: string;
   isLyricsOpen: boolean;
   onFetchLyrics: (id: string) => void;
@@ -31,6 +32,7 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
   onPickingChange,
   onAddClick,
   onEditTrack,
+  onTrimTrack,
   activeView,
   isLyricsOpen,
   onFetchLyrics,
@@ -223,6 +225,11 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
                                exit={{ opacity: 0, scale: 0.9, y: 10 }}
                                className="absolute right-0 top-full mt-2 w-48 bg-[var(--bg-main)] backdrop-blur-3xl border border-[var(--border-color)] rounded-2xl shadow-2xl z-[60] py-2 overflow-hidden"
                              >
+                               <MenuButton 
+                                  icon={<Scissors className="w-3.5 h-3.5" />}
+                                  label="Recortar Canción"
+                                  onClick={() => { onTrimTrack?.(song); setOpenMenuId(null); }}
+                               />
                                <MenuButton 
                                   icon={<Edit2 className="w-3.5 h-3.5" />}
                                   label="Editar / Mover"

@@ -1,13 +1,6 @@
 # 🎵 MusicScript: Advanced Music Player
 
-## 🚀 Despliegue con Vercel
-
-MusicScript está optimizado para ser desplegado en **Vercel** de forma instantánea:
-
-1.  **Conecta tu repositorio**: Sube el código a GitHub.
-2.  **Importa en Vercel**: Selecciona el repositorio.
-3.  **Configuración Automática**: Vercel detectará que es un proyecto **Vite**.
-4.  **Listo**: Tu reproductor estará en vivo con HTTPS y carga ultra rápida.
+**MusicScript** es un reproductor de música moderno y de alto rendimiento construido con **React**, **TypeScript** y **Vite**. Este proyecto fue desarrollado como parte del **Taller de Listas Doblemente Enlazadas**, combinando conceptos fundamentales de estructuras de datos con una interfaz de usuario premium y las herramientas de desarrollo más rápidas del ecosistema actual.
 
 > [!TIP]
 > Dado que MusicScript utiliza **IndexedDB** para la persistencia, todos los datos de tus usuarios se guardarán de forma segura en sus propios navegadores, sin necesidad de configurar bases de datos externas pesadas.
@@ -129,15 +122,36 @@ La Fase 2 elevó a MusicScript de ser un reproductor básico a una aplicación d
 
 ---
 
+## 🤖 Inteligencia Artificial & Edición de Audio Pro (Fase 3 - Finalizada)
+
+La tercera entrega consagra a MusicScript no solo como un reproductor, sino como una estación de música inteligente y autónoma, procesando toda la multimedia _In-Browser_:
+
+1. **Recorte de Audio y Codificación Nativa:**
+   - **Editor No Lineal**: Recorta canciones con precisión milimétrica usando cursores visuales duales.
+   - **Compresión Nativa (lamejs) y WAV**: Transforma el flujo de bytes `Float32Array` directamente a `WAV` o los codifica en vuelo a `MP3` sin servidores intermedios, uniendo la Web Audio API con buffers de memoria puros.
+   - **Persistencia Estable**: Manejo de caché de memoria RAM profunda (`blobUrlCache`) para URLs generadas, garantizando transiciones limpias y cero cortes de audio.
+2. **Ecualizador Profesional 5-Bandas (Patrón Decorator):**
+   - Una cadena de nodos de filtros bi-quad envuelven dinámicamente el source original de audio.
+   - Soporte para *Presets* y persistencia de frecuencias cruzadas en la cadena maestro/esclavo del analizador de espectro de la interfaz.
+3. **Agente LLM Musical Integrado (Gemini 2.0 Flash):**
+   - **Cerebro Musical Conversacional**: Conexión ultra-rápida y directa mediante API REST al modelo más potente de Google para recomendaciones y análisis de datos de los metadatos de las canciones.
+   - **Contexto Categórico**: El agente sabe "qué tienes" en este momento y su recomendación se amolda dinámicamente al estado de tus colecciones locales IndexedDB. Permite inyección de *system prompts* customizables desde la UI.
+
+---
+
 ## 🛠️ Patrones de Software y Estructuras de Datos
 
 | Concepto | Aplicación en MusicScript |
 | :--- | :--- |
 | **DLL (Lista Doble)** | Gestión de la cola de reproducción circular y navegación bidireccional inmediata. |
+| **Hash Map / Mem Caché** | Algoritmo de mapeo de llaves `O(1)` (`blobUrlCache`) para la estabilización y retención temporal de punteros Blob en el DOM, previniendo micro-cortes. |
 | **Fractional Indexing** | Algoritmo utilizado para el reordenamiento de la biblioteca sin necesidad de re-indexar miles de registros. |
-| **Repository Pattern** | Capa de abstracción (`LibraryRepository`) que separa la lógica de negocio del almacenamiento físico (Dexie/IndexedDB). |
-| **Observer Pattern** | Sincronización en tiempo real entre el estado del reproductor y los componentes de visualización (Lyrics/Visualizer). |
-| **Clean Architecture** | Separación clara entre `Core` (entidades/estructuras), `Infrastructure` (servicios/persistencia) y `UI` (componentes). |
+| **Decorator Pattern** | Encadenamiento dinámico en tiempo de ejecución de nodos Web Audio API (`BiquadFilterNode`) para inyectar el Ecualizador paramétrico sin alterar el Analyzer principal. |
+| **Observer Pattern** | Sincronización proactiva entre el estado del reproductor y los componentes visuales (Holograma/Lyrics). |
+| **Factory Pattern** | Carga e instanciación de objetos `Song` leyendo los metadatos binarios (ID33) a través de `PlaylistLoader`. |
+| **Singleton Pattern** | Unicidad global en servicios centrales estáticos como `AudioEditorService` y la Base de Datos IndexedDB (`MusicDatabase`). |
+| **Repository Pattern** | Capa de abstracción (`LibraryRepository`) que separa la lógica del dominio del motor de almacenamiento físico. |
+| **Clean Architecture** | Separación granular entre las capas `Core`, `Infrastructure` y de presentación `UI`. |
 
 ---
 
@@ -145,7 +159,7 @@ La Fase 2 elevó a MusicScript de ser un reproductor básico a una aplicación d
 
 - **Fase 1:** Motor DLL, estructura de persistencia local, interfaz moderna responsiva y gestión básica de temas. ✅
 - **Fase 2:** Ordenamiento persistente avanzado, visualizador holográfico, sistema de letras sincronizadas y guía interactiva. ✅
-- **Fase 3 (Bonus):** El sistema es ahora funcionalmente completo y listo para la entrega final del taller. ✅
+- **Fase 3:** Sistema autónomo de Procesamiento de Audio Puro (Cortador a MP3/WAV, Ecualizador via Decorator) e Inteligencia Artificial incrustada con Gemini. Proyecto Finalizado. 🚀✅
 
 ---
 *Desarrollado para el curso de Estructuras de Datos - Gabriel Paz 2026*
