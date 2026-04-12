@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Video, ExternalLink, Download, FileAudio, Info, Music as MusicIcon, HelpCircle } from 'lucide-react';
+import MusicScriptLogo from '../components/MusicScriptLogo';
 
 const GuideView: React.FC = () => {
   return (
@@ -12,9 +13,9 @@ const GuideView: React.FC = () => {
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="w-20 h-20 bg-emerald-600 rounded-[30px] flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/20 mb-6"
+            className="w-32 h-32 mx-auto mb-6"
           >
-            <HelpCircle className="w-10 h-10 text-white" />
+            <MusicScriptLogo />
           </motion.div>
           <h1 className="text-3xl md:text-5xl font-black text-[var(--text-main)] italic tracking-tighter uppercase">¿Cómo utilizar MusicScript?</h1>
           <p className="text-[10px] md:text-xs font-black text-emerald-500 uppercase tracking-[0.4em] opacity-80 italic">Guía paso a paso para poblar tu biblioteca</p>
@@ -24,10 +25,14 @@ const GuideView: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
           {/* STEP 1: YouTube */}
-          <GuideCard
+          <GuideCard 
             step="01"
             title="Desde YouTube"
-            icon={<Video className="w-8 h-8 text-red-500" />}
+            icon={
+              <svg viewBox="0 0 24 24" className="w-8 h-8 fill-red-600">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+              </svg>
+            }
             color="border-red-500/20 hover:border-red-500/50"
           >
             <p className="text-sm text-[var(--text-muted)] font-bold mb-6">Convierte cualquier video musical en una pista de alta calidad.</p>
@@ -36,9 +41,9 @@ const GuideView: React.FC = () => {
               <StepItem num="2" text="Pégalo en nuestro conversor recomendado." />
               <StepItem num="3" text="Descarga el archivo MP3 a tu dispositivo." />
             </ul>
-            <a
-              href="https://es.savemp3.net/plc59/youtube-video-to-mp3/"
-              target="_blank"
+            <a 
+              href="https://es.savemp3.net/plc59/youtube-video-to-mp3/" 
+              target="_blank" 
               rel="noopener noreferrer"
               className="group flex items-center justify-between w-full p-4 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest border border-red-500/20"
             >
@@ -48,10 +53,14 @@ const GuideView: React.FC = () => {
           </GuideCard>
 
           {/* STEP 2: Spotify */}
-          <GuideCard
+          <GuideCard 
             step="02"
             title="Desde Spotify"
-            icon={<MusicIcon className="w-8 h-8 text-emerald-500" />}
+            icon={
+              <svg viewBox="0 0 24 24" className="w-8 h-8 fill-emerald-500">
+                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.49 17.31c-.215.353-.675.465-1.03.25-2.813-1.718-6.354-2.106-10.523-1.154-.403.093-.81-.157-.903-.56-.094-.404.156-.81.56-.903 4.566-1.045 8.49-.6 11.646 1.328.355.216.466.677.25 1.03zm1.465-3.264c-.27.44-.848.578-1.288.308-3.22-1.977-8.122-2.55-11.927-1.396-.5.152-1.023-.13-1.176-.63-.153-.5.13-1.022.63-1.175 4.343-1.32 9.743-.678 13.454 1.597.44.27.578.847.308 1.287zm.126-3.41c-3.864-2.296-10.245-2.508-13.935-1.387-.593.18-1.22-.155-1.4-.748-.18-.593.155-1.22.748-1.4 4.234-1.285 11.282-1.013 15.714 1.62.533.316.71 1.01.394 1.543-.317.533-1.01.71-1.543.394z"/>
+              </svg>
+            }
             color="border-emerald-500/20 hover:border-emerald-500/50"
           >
             <p className="text-sm text-[var(--text-muted)] font-bold mb-6">¿Tienes tus temazos en Spotify? También puedes traerlos.</p>

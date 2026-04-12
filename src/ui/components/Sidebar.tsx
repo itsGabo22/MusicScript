@@ -1,5 +1,5 @@
-import React from 'react';
-import { Music, Heart, ListMusic, Plus, Library, Trash2, X, Sun, Moon, LayoutGrid, Smartphone, Disc, HelpCircle } from 'lucide-react';
+import { Heart, ListMusic, Plus, Library, Trash2, X, Sun, Moon, LayoutGrid, Smartphone, Disc, HelpCircle } from 'lucide-react';
+import MusicScriptLogo from './MusicScriptLogo';
 import type { PlaylistRecord } from '../../infrastructure/persistence/MusicDatabase';
 
 interface SidebarProps {
@@ -38,10 +38,10 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div className="w-72 h-full bg-[var(--bg-sidebar)] backdrop-blur-3xl border-r border-[var(--border-color)] flex flex-col p-6 overflow-hidden transition-colors duration-500">
-      <div className="flex items-center justify-between mb-10 px-2">
+      <div className="flex items-center justify-between mb-10 px-2 lg:px-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Music className="text-white w-6 h-6" />
+          <div className="w-16 h-16 flex items-center justify-center -ml-3">
+            <MusicScriptLogo showText={false} />
           </div>
           <h1 className="text-xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">MusicScript</h1>
         </div>

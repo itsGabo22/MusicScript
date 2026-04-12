@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Music, Play, Heart, Trash2, ListMusic, Plus, MoreVertical, Edit2 } from 'lucide-react';
+import { Play, Heart, Trash2, ListMusic, Plus, MoreVertical, Edit2 } from 'lucide-react';
 import type { Song } from '../../core/entities/Song';
 import LyricsDisplay from '../components/LyricsDisplay';
 import AmbientVisualizer from '../components/AmbientVisualizer';
+import MusicScriptLogo from '../components/MusicScriptLogo';
 
 interface DefaultPlayerProps {
   player: any;
@@ -67,7 +68,9 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
                   <img src={currentSong.coverUrl} alt={currentSong.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
-                    <Music className="w-20 h-20 text-white/10" />
+                    <div className="w-32 h-32 opacity-20">
+                      <MusicScriptLogo showText={false} />
+                    </div>
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
@@ -145,7 +148,9 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
           <div className="space-y-3">
             {songs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 opacity-30 text-center">
-                <Music className="w-16 h-16 mb-4" />
+                <div className="w-24 h-24 mb-4">
+                  <MusicScriptLogo showText={false} />
+                </div>
                 <p className="font-black text-xs uppercase tracking-widest italic">Lista Vacía</p>
               </div>
             ) : (

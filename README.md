@@ -1,5 +1,19 @@
 # 🎵 MusicScript: Advanced Music Player
 
+## 🚀 Despliegue con Vercel
+
+MusicScript está optimizado para ser desplegado en **Vercel** de forma instantánea:
+
+1.  **Conecta tu repositorio**: Sube el código a GitHub.
+2.  **Importa en Vercel**: Selecciona el repositorio.
+3.  **Configuración Automática**: Vercel detectará que es un proyecto **Vite**.
+4.  **Listo**: Tu reproductor estará en vivo con HTTPS y carga ultra rápida.
+
+> [!TIP]
+> Dado que MusicScript utiliza **IndexedDB** para la persistencia, todos los datos de tus usuarios se guardarán de forma segura en sus propios navegadores, sin necesidad de configurar bases de datos externas pesadas.
+
+---
+
 **MusicScript** es un reproductor de música moderno y de alto rendimiento construido con **React**, **TypeScript** y **Vite**. Este proyecto fue desarrollado como parte del **Taller de Listas Doblemente Enlazadas**, combinando conceptos fundamentales de estructuras de datos con una interfaz de usuario premium y las herramientas de desarrollo más rápidas del ecosistema actual.
 
 ---
