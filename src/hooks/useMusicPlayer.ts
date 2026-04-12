@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { DoublyLinkedList } from '../core/datastructures/DoublyLinkedList';
 import type { Song } from '../core/entities/Song';
 import { PlaylistLoader } from '../infrastructure/loaders/PlaylistLoader';
+import { audioAnalyzer } from '../infrastructure/services/AudioAnalyzerService';
 
 export const useMusicPlayer = () => {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -48,6 +49,8 @@ export const useMusicPlayer = () => {
   }, [playlist, syncState]);
 
   const play = () => {
+    // Mobile browsers require AudioContext to be resumed within a user interaction
+    audioAnalyzer.resume();
     audioRef.current?.play().catch(console.error);
     setIsPlaying(true);
   };
@@ -63,7 +66,7 @@ export const useMusicPlayer = () => {
     const song = playlist.next();
     if (song) {
       setCurrentSong(song);
-      if (isPlaying) setTimeout(() => play(), 50);
+      if (isPlaying) play();
     }
   };
 
@@ -71,7 +74,7 @@ export const useMusicPlayer = () => {
     const song = playlist.prev();
     if (song) {
       setCurrentSong(song);
-      if (isPlaying) setTimeout(() => play(), 50);
+      if (isPlaying) play();
     }
   };
 
@@ -95,7 +98,7 @@ export const useMusicPlayer = () => {
     const song = playlist.setCurrentById(id);
     if (song) {
       setCurrentSong(song);
-      if (isPlaying) setTimeout(() => play(), 50);
+      if (isPlaying) play();
     }
   };
 
