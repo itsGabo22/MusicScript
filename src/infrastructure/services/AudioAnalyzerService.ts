@@ -4,7 +4,10 @@ export interface IAudioEffect {
 }
 
 export class BaseAudioSource implements IAudioEffect {
-  constructor(private source: AudioNode) {}
+  private source: AudioNode;
+  constructor(source: AudioNode) {
+    this.source = source;
+  }
   connect(destination: AudioNode | AudioParam) {
     this.source.connect(destination as any);
   }
@@ -13,8 +16,12 @@ export class BaseAudioSource implements IAudioEffect {
 
 export class EqualizerDecorator implements IAudioEffect {
   private filters: BiquadFilterNode[] = [];
+  private component: IAudioEffect;
+  private context: AudioContext;
   
-  constructor(private component: IAudioEffect, private context: AudioContext) {
+  constructor(component: IAudioEffect, context: AudioContext) {
+    this.component = component;
+    this.context = context;
     // 5-band EQ: 60Hz, 230Hz, 910Hz, 3.6KHz, 14KHz
     const frequencies = [60, 230, 910, 3600, 14000];
     this.filters = frequencies.map((freq, index) => {
