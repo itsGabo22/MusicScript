@@ -43,7 +43,9 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
         // Use 16 points for a smooth but reactive curve
         const step = Math.floor(data.length / 32);
         for (let i = 0; i < 16; i++) {
-          const val = (data[i * step] / 255) * (isPlaying ? 1 : 0.2);
+          // Add a base value (0.05) so the wave never disappears completely (stays fused)
+          const base = 0.05;
+          const val = base + (data[i * step] / 255) * (isPlaying ? 0.95 : 0.05);
           reducedData.push(val);
         }
         setVisualData(reducedData);
@@ -147,18 +149,18 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
           <div className="relative flex-1 group h-1 bg-[var(--border-color)] rounded-full cursor-pointer">
             
             {/* THE "SUPER CURVE" HOLOGRAPHIC VISUALIZER - INTEGRATED WITH PROGRESS */}
-            <div className="absolute left-0 right-0 bottom-full mb-0 h-16 md:h-20 pointer-events-none z-0 overflow-visible">
+            <div className="absolute left-0 right-0 bottom-[1.5px] h-24 md:h-28 pointer-events-none z-0 overflow-visible">
                <svg 
                  viewBox="0 0 1000 100" 
                  preserveAspectRatio="none" 
-                 className="w-full h-full drop-shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all duration-300"
+                 className="w-full h-full drop-shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-all duration-300"
                >
                  {/* Background track curve */}
                  <path 
                    d={svgPath} 
                    fill="rgba(16, 185, 129, 0.05)" 
-                   stroke="rgba(16, 185, 129, 0.2)" 
-                   strokeWidth="2"
+                   stroke="rgba(16, 185, 129, 0.15)" 
+                   strokeWidth="1.5"
                  />
                  
                  {/* Progress-synced curve */}
@@ -166,8 +168,8 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
                     <path 
                       d={svgPath} 
                       fill="rgba(16, 185, 129, 0.2)" 
-                      stroke="rgba(16, 185, 129, 0.8)" 
-                      strokeWidth="3"
+                      stroke="rgba(16, 185, 129, 0.9)" 
+                      strokeWidth="3.5"
                       className="transition-all duration-300"
                     />
                  </svg>

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Music, Play, Heart, Trash2, ListMusic, Plus } from 'lucide-react';
+import { Music, Play, Heart, Trash2, ListMusic, Plus, MoreVertical, Edit2 } from 'lucide-react';
 import type { Song } from '../../core/entities/Song';
 import LyricsDisplay from '../components/LyricsDisplay';
 import AmbientVisualizer from '../components/AmbientVisualizer';
@@ -11,6 +11,7 @@ interface DefaultPlayerProps {
   onDeleteTrack: (id: string) => void;
   onPickingChange: (id: string | null) => void;
   onAddClick: () => void;
+  onEditTrack: (song: Song) => void; // NEW: Edit handler
   activeView: string;
   isLyricsOpen: boolean;
   onFetchLyrics: (id: string) => void;
@@ -28,6 +29,7 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
   onDeleteTrack,
   onPickingChange,
   onAddClick,
+  onEditTrack,
   activeView,
   isLyricsOpen,
   onFetchLyrics,
@@ -39,6 +41,7 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
 }) => {
   const songs = player.songs;
   const currentSong = player.currentSong;
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const getViewTitle = () => {
     if (activeView === 'library') return 'Biblioteca';
@@ -47,7 +50,6 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
   };
 
   return (
-    /* FULL EXPANSION: Removed top padding almost completely (lg:pt-2) to fill the screen upwards */
     <div className="flex-1 flex flex-col lg:flex-row h-full overflow-hidden p-4 md:p-6 lg:p-6 lg:pt-2 pb-28 lg:pb-32 gap-6 lg:gap-10 relative animate-in fade-in duration-700">
       
       {/* LEFT COLUMN: Image, Info, and Integrated Lyrics */}
@@ -74,7 +76,6 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
 
           <AmbientVisualizer isPlaying={player.isPlaying} color={{ r: 16, g: 185, b: 129 }} />
 
-          {/* Integrated Lyrics Overlay */}
           <AnimatePresence>
             {isLyricsOpen && currentSong && (
               <LyricsDisplay 
@@ -154,7 +155,7 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.02 }}
-                  className={`group flex items-center gap-4 p-3.5 rounded-[28px] transition-all duration-500 border border-transparent cursor-pointer ${
+                  className={`group relative flex items-center gap-4 p-3.5 rounded-[28px] transition-all duration-500 border border-transparent cursor-pointer ${
                     currentSong?.id === song.id 
                       ? 'bg-emerald-600/10 border-emerald-500/20 shadow-lg' 
                       : 'hover:bg-[var(--bg-card)] hover:border-[var(--border-color)] active:scale-[0.98]'
@@ -177,40 +178,65 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h4 className={`text-sm font-black truncate tracking-tight uppercase italic ${currentSong?.id === song.id ? 'text-emerald-500' : 'text-[var(--text-main)]'}`}>
-                      {song.title}
-                    </h4>
+                    <div className="flex items-center gap-2">
+                       <span className="text-[9px] font-black text-emerald-500/50 italic">#{index}</span>
+                       <h4 className={`text-sm font-black truncate tracking-tight uppercase italic flex-1 ${currentSong?.id === song.id ? 'text-emerald-500' : 'text-[var(--text-main)]'}`}>
+                         {song.title}
+                       </h4>
+                    </div>
                     <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest truncate opacity-80 italic">
                       {song.artist}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all px-2 md:flex">
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); onFetchLyrics(song.id); }}
-                      className="p-2 text-[var(--text-muted)] hover:text-emerald-500 rounded-xl transition-colors"
-                      title="Ver Letras"
-                    >
-                      <ListMusic className="w-4 h-4" />
-                    </button>
+                  <div className="flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all px-2">
                     <button 
                       onClick={(e) => { e.stopPropagation(); onToggleFavorite(song.id); }}
                       className={`p-2 transition-all ${song.isFavorite ? 'text-emerald-500 bg-emerald-500/10' : 'text-[var(--text-muted)] hover:text-red-500'} rounded-xl`}
                     >
                       <Heart className={`w-4 h-4 ${song.isFavorite ? 'fill-current' : ''}`} />
                     </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); onPickingChange(song.id); }}
-                      className="p-2 text-[var(--text-muted)] hover:text-emerald-500 rounded-xl transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); onDeleteTrack(song.id); }}
-                      className="p-2 text-[var(--text-muted)] hover:text-red-500 rounded-xl transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    
+                    {/* SURGICAL MENU: Three dots (...) */}
+                    <div className="relative">
+                       <button 
+                         onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === song.id ? null : song.id); }}
+                         className="p-2 text-[var(--text-muted)] hover:text-emerald-500 hover:bg-emerald-500/10 rounded-xl transition-all"
+                       >
+                         <MoreVertical className="w-4 h-4" />
+                       </button>
+
+                       <AnimatePresence>
+                         {openMenuId === song.id && (
+                           <>
+                             <div className="fixed inset-0 z-[50]" onClick={() => setOpenMenuId(null)} />
+                             <motion.div 
+                               initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                               animate={{ opacity: 1, scale: 1, y: 0 }}
+                               exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                               className="absolute right-0 top-full mt-2 w-48 bg-[var(--bg-main)] backdrop-blur-3xl border border-[var(--border-color)] rounded-2xl shadow-2xl z-[60] py-2 overflow-hidden"
+                             >
+                               <MenuButton 
+                                  icon={<Edit2 className="w-3.5 h-3.5" />}
+                                  label="Editar / Mover"
+                                  onClick={() => { onEditTrack(song); setOpenMenuId(null); }}
+                               />
+                               <MenuButton 
+                                  icon={<Plus className="w-3.5 h-3.5" />}
+                                  label="Añadir a Playlist"
+                                  onClick={() => { onPickingChange(song.id); setOpenMenuId(null); }}
+                               />
+                               <MenuButton 
+                                  icon={<Trash2 className="w-3.5 h-3.5 text-red-500" />}
+                                  label="Eliminar"
+                                  variant="danger"
+                                  onClick={() => { onDeleteTrack(song.id); setOpenMenuId(null); }}
+                               />
+                             </motion.div>
+                           </>
+                         )}
+                       </AnimatePresence>
+                    </div>
                   </div>
                 </motion.div>
               ))
@@ -221,5 +247,15 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
     </div>
   );
 };
+
+const MenuButton = ({ icon, label, onClick, variant = 'default' }: { icon: any, label: string, onClick: () => void, variant?: 'default' | 'danger' }) => (
+  <button 
+    onClick={(e) => { e.stopPropagation(); onClick(); }}
+    className={`w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-emerald-500/10 ${variant === 'danger' ? 'text-red-500 hover:bg-red-500/10' : 'text-[var(--text-muted)] hover:text-emerald-500'}`}
+  >
+    {icon}
+    <span>{label}</span>
+  </button>
+);
 
 export default DefaultPlayer;

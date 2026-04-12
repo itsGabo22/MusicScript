@@ -63,6 +63,10 @@
     background-color: rgba(16, 185, 129, 0.2);
     border-radius: 9999px;
   }
+  /* Remove scroll-behavior: smooth here because JS handles it for sync precision */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior: contain;
 }
 
 /* PERFORMANCE & SCROLL UTILITIES */

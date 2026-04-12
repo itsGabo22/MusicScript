@@ -12,6 +12,7 @@ import CreatePlaylistModal from './ui/components/CreatePlaylistModal';
 import PlaylistPicker from './ui/components/PlaylistPicker';
 import { LyricsService } from './infrastructure/services/LyricsService';
 import { audioAnalyzer } from './infrastructure/services/AudioAnalyzerService';
+import type { Song } from './core/entities/Song';
 
 type ViewMode = 'modern' | 'ipod' | 'cassette';
 
@@ -25,6 +26,7 @@ function App() {
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
   const [activeView, setActiveView] = useState('library');
   const [pickingForTrackId, setPickingForTrackId] = useState<string | null>(null);
+  const [editingTrack, setEditingTrack] = useState<Song | null>(null);
   
   // Lyrics State
   const [activeLyrics, setActiveLyrics] = useState<{ plain: string | null; synced: string | null } | null>(null);
@@ -35,13 +37,16 @@ function App() {
   const prevViewRef = useRef<string>('');
 
   // --- View Filtering Engine ---
+  const lastQueueFingerprint = useRef<string>('');
+
   useEffect(() => {
-    if (prevViewRef.current === activeView) return;
+    let filteredSongs: Song[] = [];
     
-    let filteredSongs = [...library.librarySongs];
     if (activeView === 'favorites') {
-      filteredSongs = library.librarySongs.filter(s => s.isFavorite);
-    } else if (activeView !== 'library') {
+      filteredSongs = library.getFavorites();
+    } else if (activeView === 'library') {
+      filteredSongs = [...library.librarySongs];
+    } else {
       const playlist = playlists.playlists.find(p => p.id === activeView);
       if (playlist) {
         filteredSongs = playlist.songIds
@@ -50,9 +55,21 @@ function App() {
       }
     }
     
-    player.setQueue(filteredSongs);
+    // Fingerprint: A string representing the order and identity of the songs
+    const currentFingerprint = filteredSongs.map(s => s.id).join(',');
+    
+    if (currentFingerprint !== lastQueueFingerprint.current || activeView !== prevViewRef.current) {
+      player.setQueue(filteredSongs);
+      lastQueueFingerprint.current = currentFingerprint;
+    } else {
+      // If only metadata (like isFavorite) changed, update the existing DLL nodes
+      filteredSongs.forEach(s => {
+        player.updateTrackMetadata(s.id, { isFavorite: s.isFavorite });
+      });
+    }
+    
     prevViewRef.current = activeView;
-  }, [activeView, library.librarySongs.length, playlists.playlists.length]);
+  }, [activeView, library.librarySongs, playlists.playlists.length]);
 
   // --- Audio Analyzer Initialization ---
   useEffect(() => {
@@ -89,18 +106,6 @@ function App() {
             player.next();
           }
           break;
-        case 'ArrowUp':
-          if (ctrl) {
-            e.preventDefault();
-            player.updateVolume(Math.min(1, player.volume + 0.1));
-          }
-          break;
-        case 'ArrowDown':
-          if (ctrl) {
-            e.preventDefault();
-            player.updateVolume(Math.max(0, player.volume - 0.1));
-          }
-          break;
         case 'Escape':
           if (isLyricsOpen) setIsLyricsOpen(false);
           break;
@@ -131,22 +136,21 @@ function App() {
   // --- Handlers ---
   const handleToggleFavorite = async (id: string) => {
     await library.toggleFavorite(id);
-    const updatedSong = library.librarySongs.find(s => s.id === id);
-    if (updatedSong) {
-      player.updateTrackMetadata(id, { isFavorite: !updatedSong.isFavorite });
-    }
   };
 
   const handleAddSong = async (file: File, metadata: any) => {
-    const song = await library.addToLibrary(file, metadata);
-    if (song) {
-      player.addTrack(song, metadata.position);
-    }
+    await library.addToLibrary(file, metadata);
+    setIsModalOpen(false);
+  };
+
+  const handleEditTrack = async (id: string, metadata: Partial<Song>, position: 'start' | 'end' | number) => {
+    await library.updateTrack(id, metadata, position);
+    setEditingTrack(null);
+    setIsModalOpen(false);
   };
 
   const handleDeleteTrack = async (id: string) => {
     await library.removeFromLibrary(id);
-    player.removeTrack(id); 
   };
 
   const handleFetchLyrics = async (songId: string) => {
@@ -180,19 +184,9 @@ function App() {
     }
   }, [activeSong?.id]);
 
-  useEffect(() => {
-    if (isLyricsOpen && window.innerWidth < 1024) {
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        appContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    }
-  }, [isLyricsOpen]);
-
   const cycleViewMode = () => {
     const modes: ViewMode[] = ['modern', 'ipod', 'cassette'];
-    const currentIndex = modes.indexOf(viewMode);
-    setViewMode(modes[(currentIndex + 1) % modes.length]);
+    setViewMode(modes[(modes.indexOf(viewMode) + 1) % modes.length]);
   };
 
   return (
@@ -202,22 +196,23 @@ function App() {
         playlists={playlists}
         onViewChange={setActiveView}
         onCreatePlaylist={() => setIsPlaylistModalOpen(true)}
-        // PASS PROPS TO SHELL
         viewMode={viewMode}
         isDark={isDark}
         onToggleView={cycleViewMode}
         onToggleTheme={() => setIsDark(!isDark)}
       >
         <div className="flex flex-col h-full relative">
-          
-          {/* EXPANDED: Removed absolute floating buttons and REDUCED top padding to ZERO in PC view (lg:pt-0) */}
-          <main className={`flex-1 w-full lg:h-screen lg:overflow-hidden relative pt-4 lg:pt-0 flex flex-col ${viewMode !== 'modern' ? 'items-center justify-center p-4' : ''}`}>
+          <main className={`flex-1 w-full lg:overflow-hidden relative pt-4 lg:pt-0 flex flex-col ${viewMode !== 'modern' ? 'items-center justify-center p-4' : ''}`}>
             {viewMode === 'modern' && (
               <DefaultPlayer 
                 player={player} 
                 onToggleFavorite={handleToggleFavorite}
                 onPickingChange={setPickingForTrackId}
                 onDeleteTrack={handleDeleteTrack}
+                onEditTrack={(song) => {
+                   setEditingTrack(song);
+                   setIsModalOpen(true);
+                }}
                 activeView={activeView}
                 isLyricsOpen={isLyricsOpen}
                 onFetchLyrics={handleFetchLyrics}
@@ -227,7 +222,10 @@ function App() {
                 currentTime={player.currentTime}
                 onSeek={player.seek}
                 coverUrl={activeSong?.coverUrl}
-                onAddClick={() => setIsModalOpen(true)}
+                onAddClick={() => {
+                   setEditingTrack(null);
+                   setIsModalOpen(true);
+                }}
               />
             )}
             {viewMode === 'ipod' && <IpodPlayer player={player} />}
@@ -261,9 +259,14 @@ function App() {
 
       <AddSongModal 
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+           setIsModalOpen(false);
+           setEditingTrack(null);
+        }}
         onAdd={handleAddSong}
+        onEdit={handleEditTrack}
         playlistSize={library.librarySongs.length}
+        editTrack={editingTrack}
       />
 
       <CreatePlaylistModal 
