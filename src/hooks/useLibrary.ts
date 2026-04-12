@@ -9,8 +9,13 @@ export const useLibrary = () => {
 
   const refreshLibrary = useCallback(async () => {
     setIsLoading(true);
-    const songs = await libraryRepo.getAllTracks();
-    setLibrarySongs(songs);
+    const tracks = await libraryRepo.getAllTracks();
+    // Re-generate Blob URLs since they are revoked on refresh
+    const songsWithUrls = tracks.map(track => ({
+      ...track,
+      audioUrl: URL.createObjectURL(track.audioBlob)
+    }));
+    setLibrarySongs(songsWithUrls);
     setIsLoading(false);
   }, []);
 
