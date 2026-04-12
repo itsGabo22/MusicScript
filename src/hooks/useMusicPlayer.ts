@@ -21,8 +21,13 @@ export const useMusicPlayer = () => {
   }, [playlist]);
 
   const setQueue = (newSongs: Song[]) => {
+    const previousIndexId = playlist.getCurrent()?.id;
     playlist.clear();
     newSongs.forEach(s => playlist.add(s));
+    
+    if (previousIndexId) {
+       playlist.setCurrentById(previousIndexId);
+    }
     syncState();
   };
 

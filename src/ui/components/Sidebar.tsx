@@ -1,4 +1,4 @@
-import { Heart, ListMusic, Plus, Library, Trash2, X, Sun, Moon, LayoutGrid, Smartphone, Disc, HelpCircle } from 'lucide-react';
+import { Heart, ListMusic, Plus, Library, Trash2, X, Sun, Moon, LayoutGrid, Smartphone, Disc, HelpCircle, Sparkles } from 'lucide-react';
 import MusicScriptLogo from './MusicScriptLogo';
 import type { PlaylistRecord } from '../../infrastructure/persistence/MusicDatabase';
 
@@ -65,6 +65,17 @@ const Sidebar: React.FC<SidebarProps> = ({
             label="Favoritos"
             active={activeView === 'favorites'}
             onClick={() => onViewChange('favorites')}
+          />
+        </div>
+
+        {/* AI Assistant */}
+        <div className="space-y-1">
+          <p className="px-4 text-[10px] font-black uppercase text-emerald-500 tracking-[0.2em] mb-3 opacity-60">Inteligencia</p>
+          <NavItem
+            icon={<Sparkles className="w-5 h-5" />}
+            label="Asistente IA"
+            active={activeView === 'ai'}
+            onClick={() => onViewChange('ai')}
           />
         </div>
 

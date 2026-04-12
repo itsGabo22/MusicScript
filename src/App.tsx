@@ -6,11 +6,13 @@ import DefaultPlayer from './ui/layouts/DefaultPlayer';
 import IpodPlayer from './ui/layouts/IpodPlayer';
 import CassettePlayer from './ui/layouts/CassettePlayer';
 import AddSongModal from './ui/components/AddSongModal';
+import { SongEditorModal } from './ui/components/SongEditorModal';
 import AppShell from './ui/components/AppShell';
 import PlayerBar from './ui/components/PlayerBar';
 import CreatePlaylistModal from './ui/components/CreatePlaylistModal';
 import PlaylistPicker from './ui/components/PlaylistPicker';
 import GuideView from './ui/views/GuideView';
+import AIAssistant from './ui/views/AIAssistant';
 import { LyricsService } from './infrastructure/services/LyricsService';
 import { audioAnalyzer } from './infrastructure/services/AudioAnalyzerService';
 import type { Song } from './core/entities/Song';
@@ -28,6 +30,7 @@ function App() {
   const [activeView, setActiveView] = useState('library');
   const [pickingForTrackId, setPickingForTrackId] = useState<string | null>(null);
   const [editingTrack, setEditingTrack] = useState<Song | null>(null);
+  const [trimmingTrack, setTrimmingTrack] = useState<Song | null>(null);
   
   // Lyrics State
   const [activeLyrics, setActiveLyrics] = useState<{ plain: string | null; synced: string | null } | null>(null);
@@ -209,7 +212,7 @@ function App() {
       >
         <div className="flex flex-col h-full relative">
           <main className={`flex-1 w-full lg:overflow-hidden relative pt-4 lg:pt-0 flex flex-col ${viewMode !== 'modern' ? 'items-center justify-center p-4' : ''}`}>
-            {viewMode === 'modern' && activeView !== 'guide' && (
+            {viewMode === 'modern' && activeView !== 'guide' && activeView !== 'ai' && (
               <DefaultPlayer 
                 player={player} 
                 onToggleFavorite={handleToggleFavorite}
@@ -219,6 +222,7 @@ function App() {
                    setEditingTrack(song);
                    setIsModalOpen(true);
                 }}
+                onTrimTrack={(song) => setTrimmingTrack(song)}
                 activeView={activeView}
                 isLyricsOpen={isLyricsOpen}
                 onFetchLyrics={handleFetchLyrics}
@@ -235,8 +239,16 @@ function App() {
               />
             )}
             {activeView === 'guide' && <GuideView />}
-            {viewMode === 'ipod' && <IpodPlayer player={player} />}
-            {viewMode === 'cassette' && <CassettePlayer player={player} />}
+            {activeView === 'ai' && (
+              <AIAssistant 
+                songs={library.librarySongs}
+                favorites={library.getFavorites()}
+                playlists={playlists.playlists}
+                currentSong={activeSong}
+              />
+            )}
+            {viewMode === 'ipod' && <IpodPlayer player={player} isDark={isDark} />}
+            {viewMode === 'cassette' && <CassettePlayer player={player} isDark={isDark} />}
           </main>
 
           <PlayerBar 
@@ -280,6 +292,16 @@ function App() {
         isOpen={isPlaylistModalOpen}
         onClose={() => setIsPlaylistModalOpen(false)}
         onCreate={playlists.createPlaylist}
+      />
+
+      <SongEditorModal 
+        song={trimmingTrack}
+        isOpen={!!trimmingTrack}
+        onClose={() => setTrimmingTrack(null)}
+        onSuccess={() => {
+          library.refreshLibrary();
+          setTrimmingTrack(null);
+        }}
       />
 
       <PlaylistPicker 
