@@ -6,14 +6,14 @@
       </linearGradient>
     </defs>
 
-    {/* Scaled version of the original design to fill the favicon space */}
+    <!-- Scaled version of the original design to fill the favicon space -->
     <g transform="translate(200, 200) scale(1.5)">
       <g transform="translate(-200, -170)">
-        {/* Concentric circles */}
+        <!-- Concentric circles -->
         <circle cx="200" cy="170" r="110" stroke="url(#tealGradient)" stroke-width="4" fill="none" stroke-dasharray="12 12" />
         <circle cx="200" cy="170" r="125" stroke="#10b981" stroke-width="2" fill="none" opacity="0.3" />
 
-        {/* MJS Monogram with original thickness */}
+        <!-- MJS Monogram with original thickness -->
         <g stroke="url(#tealGradient)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none">
           <polyline points="120,210 120,120 160,170 200,120 200,210" />
           <path d="M 240,120 V 190 A 25,25 0 0 1 190,190" />
