@@ -27,7 +27,8 @@ export class SyncService {
 
       this.peer.on('connection', (conn) => {
         this.connection = conn;
-        this.setupConnectionListeners(conn);
+        // Don't set to connected until Handshake is received
+        this.setupConnectionListeners(conn, true);
       });
 
       this.peer.on('error', (err) => {
@@ -47,9 +48,10 @@ export class SyncService {
         
         conn.on('open', () => {
           this.connection = conn;
-          if (this.onConnectionStateChange) this.onConnectionStateChange('connected');
-          this.setupConnectionListeners(conn);
-          resolve();
+          this.setupConnectionListeners(conn, false, resolve);
+          // Send handshake
+          console.log("Sending Handshake to Host...");
+          conn.send({ type: 'HANDSHAKE' });
         });
 
         conn.on('error', (err) => {
@@ -65,10 +67,20 @@ export class SyncService {
     });
   }
 
-  private setupConnectionListeners(conn: DataConnection) {
-    if (this.onConnectionStateChange) this.onConnectionStateChange('connected');
-
+  private setupConnectionListeners(conn: DataConnection, isHost: boolean, resolveClient?: () => void) {
     conn.on('data', async (data: any) => {
+      // Handshake protocol
+      if (data.type === 'HANDSHAKE' && isHost) {
+        console.log("Handshake received from client!");
+        if (this.onConnectionStateChange) this.onConnectionStateChange('connected');
+        conn.send({ type: 'HANDSHAKE_ACK' });
+      } else if (data.type === 'HANDSHAKE_ACK' && !isHost) {
+        console.log("Handshake ACK received from host!");
+        if (this.onConnectionStateChange) this.onConnectionStateChange('connected');
+        if (resolveClient) resolveClient();
+      }
+      
+      // Track transfer
       if (data.type === 'TRACK') {
         const { track, current, total } = data.payload;
         // The track.audioBlob will be reconstructed by PeerJS if sent as arraybuffer/blob

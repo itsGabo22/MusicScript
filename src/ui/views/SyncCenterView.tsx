@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { Smartphone, MonitorPlay, Wifi, ArrowRightLeft, Send, Download, Check, RefreshCw } from 'lucide-react';
 import { syncService, type SyncMode } from '../../infrastructure/services/SyncService';
 import { usePlaylists } from '../../hooks/usePlaylists';
@@ -19,6 +19,11 @@ export const SyncCenterView: React.FC = () => {
   const [lastReceivedTrack, setLastReceivedTrack] = useState('');
   const [isTransferring, setIsTransferring] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Camera State
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState("");
+  const qrCodeRef = React.useRef<Html5Qrcode | null>(null);
 
   // Host options
   const [sendMode, setSendMode] = useState<SyncMode>('library');
@@ -40,9 +45,48 @@ export const SyncCenterView: React.FC = () => {
     };
 
     return () => {
+      stopCamera();
       syncService.disconnect();
     };
   }, []);
+
+  const stopCamera = async () => {
+    if (qrCodeRef.current && qrCodeRef.current.isScanning) {
+      try {
+        await qrCodeRef.current.stop();
+        qrCodeRef.current.clear();
+      } catch (e) {
+        console.error("Camera stop error:", e);
+      }
+    }
+    setIsCameraActive(false);
+  };
+
+  const startCamera = async () => {
+    try {
+      setCameraError("");
+      const html5QrCode = new Html5Qrcode("reader");
+      qrCodeRef.current = html5QrCode;
+      setIsCameraActive(true);
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          stopCamera().then(() => {
+            setClientPinInput(decodedText);
+            startClientConnect(decodedText);
+          });
+        },
+        () => {
+          // ignore scan errors
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      setIsCameraActive(false);
+      setCameraError("No se pudo acceder a la cámara. Revisa permisos.");
+    }
+  };
 
   const generatePin = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -72,21 +116,10 @@ export const SyncCenterView: React.FC = () => {
     }
   };
 
-  // QR Scanner logic
+  // Clean up camera if perspective changes away from client connection
   useEffect(() => {
-    if (perspective === 'client' && connectionState === 'disconnected') {
-      const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
-      scanner.render((text) => {
-        scanner.clear();
-        setClientPinInput(text);
-        startClientConnect(text);
-      }, () => {
-        // ignore scan errors, they happen every frame it doesn't find a QR
-      });
-
-      return () => {
-        scanner.clear().catch(e => console.error(e));
-      };
+    if (perspective !== 'client' || connectionState !== 'disconnected') {
+      stopCamera();
     }
   }, [perspective, connectionState]);
 
@@ -265,23 +298,37 @@ export const SyncCenterView: React.FC = () => {
                   <>
                     <h2 className="text-3xl font-black italic uppercase text-white mb-2">Ingresa al Servidor</h2>
                     <p className="text-[var(--text-muted)] font-bold text-center mb-8">Escanea el QR en la pantalla de la PC principal, o ingresa su código PIN aquí manualmente.</p>
-                    
-                    <div id="reader" className="w-full max-w-sm mb-6 rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-black/40" />
+                    <div className="w-full max-w-sm mb-6 flex flex-col items-center">
+                      <div id="reader" className={`${isCameraActive ? 'border border-blue-500/30' : ''} w-full rounded-3xl overflow-hidden shadow-2xl bg-black/40 mb-4`} />
+                      
+                      {!isCameraActive && (
+                        <button 
+                          onClick={startCamera}
+                          className="bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/40 w-full py-4 rounded-2xl font-black uppercase tracking-widest transition-all"
+                        >
+                          Escanear QR (Cámara Trasera)
+                        </button>
+                      )}
+                      
+                      {cameraError && (
+                        <p className="text-red-400 text-xs font-bold mt-2">{cameraError}</p>
+                      )}
+                    </div>
 
                     <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm relative z-20">
                       <input 
                         type="text" 
                         value={clientPinInput}
                         onChange={(e) => setClientPinInput(e.target.value.toUpperCase())}
-                        placeholder="CÓDIGO PIN"
-                        className="flex-1 bg-black/40 border border-white/10 text-white rounded-2xl py-4 px-6 font-mono text-2xl text-center tracking-[0.3em] focus:outline-none focus:border-blue-500 transition-colors uppercase h-16 w-full"
+                        placeholder="O INGRESA PIN"
+                        className="flex-1 bg-black/40 border border-white/10 text-white rounded-2xl py-4 px-6 font-mono text-xl sm:text-2xl text-center tracking-[0.3em] focus:outline-none focus:border-blue-500 transition-colors uppercase h-16 w-full"
                       />
                       <button 
                         onClick={() => startClientConnect(clientPinInput)}
-                        disabled={!clientPinInput || clientPinInput.length < 4}
+                        disabled={!clientPinInput || clientPinInput.length < 4 || connectionState === 'connecting'}
                         className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-8 h-16 sm:h-auto font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl hover:shadow-blue-500/20"
                       >
-                        Conectar ahora
+                        {connectionState === 'connecting' ? 'Conectando...' : 'Conectar'}
                       </button>
                     </div>
                   </>
