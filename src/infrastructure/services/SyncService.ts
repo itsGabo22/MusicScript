@@ -15,11 +15,14 @@ const WEBRTC_CONFIG = {
       { urls: 'stun:stun1.l.google.com:19302' },
       { urls: 'stun:stun2.l.google.com:19302' },
       { urls: 'stun:stun3.l.google.com:19302' },
-      { urls: 'stun:stun4.l.google.com:19302' }
+      { urls: 'stun:stun4.l.google.com:19302' },
+      { urls: 'stun:stun.services.mozilla.com' }
     ],
     iceTransportPolicy: 'all' as RTCIceTransportPolicy
   }
 };
+
+const ID_SUFFIX = '-MS-V4';
 
 // A lightweight wrapper around PeerJS to handle specific logic
 export class SyncService {
@@ -34,12 +37,13 @@ export class SyncService {
 
   public initializeAsHost(customId?: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.log(`Initializing Host... (ID: ${customId || 'random'})`);
-      this.peer = customId ? new Peer(customId, WEBRTC_CONFIG) : new Peer(WEBRTC_CONFIG);
+      const namespacedId = customId ? `${customId}${ID_SUFFIX}` : undefined;
+      this.log(`Initializing Host... (Namespace: ${ID_SUFFIX})`);
+      this.peer = namespacedId ? new Peer(namespacedId, WEBRTC_CONFIG) : new Peer(WEBRTC_CONFIG);
 
       this.peer.on('open', (id) => {
-        this.log(`Signaling: PC is LIVE with global ID: ${id}`);
-        resolve(id);
+        this.log(`Signaling: PC is LIVE. ID global registrado: ${id}`);
+        resolve(id.replace(ID_SUFFIX, ''));
       });
 
       this.peer.on('connection', (conn) => {
@@ -68,15 +72,16 @@ export class SyncService {
 
   public connectAsClient(hostId: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.log(`Client: Connecting to target Host ID: ${hostId}... (Using STUN)`);
+      const targetId = `${hostId}${ID_SUFFIX}`;
+      this.log(`Client: Connecting to PIN ${hostId} (Target: ${targetId})...`);
       this.peer = new Peer(WEBRTC_CONFIG);
       
-      this.peer.on('open', (id) => {
-        this.log(`Client LIVE with ID: ${id}. Requesting connection to ${hostId}...`);
+      this.peer.on('open', (_id) => {
+        this.log(`Client LIVE. Requesting tunnel to ${targetId}...`);
         if (this.onConnectionStateChange) this.onConnectionStateChange('connecting');
         
         // Using JSON serialization for better compatibility with mobile browsers
-        const conn = this.peer!.connect(hostId, { 
+        const conn = this.peer!.connect(targetId, { 
           reliable: true,
           serialization: 'json'
         });
