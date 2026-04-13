@@ -16,6 +16,7 @@
     "framer-motion": "^12.38.0",
     "html5-qrcode": "^2.3.8",
     "jsmediatags": "^3.9.7",
+    "jszip": "^3.10.1",
     "lamejs": "^1.2.1",
     "lucide-react": "^1.8.0",
     "peerjs": "^1.5.5",

@@ -1,160 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { QRCodeSVG } from 'qrcode.react';
-import { Html5Qrcode } from 'html5-qrcode';
-import { Smartphone, MonitorPlay, Wifi, ArrowRightLeft, Send, Download, Check, RefreshCw } from 'lucide-react';
-import { syncService, type SyncMode } from '../../infrastructure/services/SyncService';
+import { Smartphone, MonitorPlay, Download, Check, RefreshCw, FileArchive, ArrowUpCircle, AlertCircle, History } from 'lucide-react';
+import { syncBridgeService } from '../../infrastructure/services/SyncBridgeService';
 import { usePlaylists } from '../../hooks/usePlaylists';
+import { useLibrary } from '../../hooks/useLibrary';
+import type { TrackRecord } from '../../infrastructure/persistence/MusicDatabase';
 
 type SyncPerspective = 'idle' | 'host' | 'client';
 
 export const SyncCenterView: React.FC = () => {
   const [perspective, setPerspective] = useState<SyncPerspective>('idle');
-  const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
-  const [pin, setPin] = useState('');
-  const [clientPinInput, setClientPinInput] = useState('');
   
-  // Transfer state
-  const [progress, setProgress] = useState({ current: 0, total: 0 });
-  const [lastReceivedTrack, setLastReceivedTrack] = useState('');
-  const [isTransferring, setIsTransferring] = useState(false);
+  // Vault state
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0, message: '' });
   const [isSuccess, setIsSuccess] = useState(false);
+  const [importSummary, setImportSummary] = useState<{ imported: number; skipped: number; replaced: number } | null>(null);
 
-  // Camera State
-  const [isCameraActive, setIsCameraActive] = useState(false);
-  const [cameraError, setCameraError] = useState("");
-  const qrCodeRef = React.useRef<Html5Qrcode | null>(null);
-  const [debugLogs, setDebugLogs] = useState<string[]>([]);
-  const [showDebug, setShowDebug] = useState(false);
-  const logEndRef = React.useRef<HTMLDivElement>(null);
+  // Conflict Resolution
+  const [conflict, setConflict] = useState<{
+    track: Omit<TrackRecord, 'audioBlob'>;
+    resolve: (action: 'skip' | 'replace') => void;
+  } | null>(null);
 
-  // Host options
-  const [sendMode, setSendMode] = useState<SyncMode>('library');
-  const [selectedPlaylist, setSelectedPlaylist] = useState('');
   const playlistsData = usePlaylists();
+  const libraryData = useLibrary();
 
-  useEffect(() => {
-    syncService.onConnectionStateChange = (state) => setConnectionState(state);
-    
-    syncService.onReceiveTrack = (track, current, total) => {
-      setLastReceivedTrack(track.title);
-      setProgress({ current, total });
-      if (current === 1) setIsTransferring(true);
-    };
-
-    syncService.onTransferComplete = () => {
-      setIsTransferring(false);
+  const handleExport = async () => {
+    try {
+      setIsProcessing(true);
+      setIsSuccess(false);
+      const blob = await syncBridgeService.exportVault((msg, p) => {
+        setProgress({ current: p, total: 100, message: msg });
+      });
+      
+      const filename = `MusicScript_Vault_${new Date().toISOString().split('T')[0]}.mssync`;
+      syncBridgeService.downloadBlob(blob, filename);
       setIsSuccess(true);
-    };
-
-
-    
-    syncService.onDebugLog = (msg) => {
-      const timestamp = new Date().toLocaleTimeString();
-      setDebugLogs(prev => [`[${timestamp}] ${msg}`, ...prev].slice(0, 50));
-    };
-
-    return () => {
-      stopCamera();
-      syncService.disconnect();
-    };
-  }, []);
-
-  const stopCamera = async () => {
-    if (qrCodeRef.current && qrCodeRef.current.isScanning) {
-      try {
-        await qrCodeRef.current.stop();
-        qrCodeRef.current.clear();
-      } catch (e) {
-        console.error("Camera stop error:", e);
-      }
+    } catch (error) {
+      console.error(error);
+      alert("Error al exportar la bóveda");
+    } finally {
+      setIsProcessing(false);
     }
-    setIsCameraActive(false);
   };
 
-  const startCamera = async () => {
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     try {
-      setCameraError("");
-      const html5QrCode = new Html5Qrcode("reader");
-      qrCodeRef.current = html5QrCode;
-      setIsCameraActive(true);
-      await html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          // Immediately start connection process, independently of camera stopping gracefully
-          setClientPinInput(decodedText);
-          startClientConnect(decodedText);
-          stopCamera();
+      setIsProcessing(true);
+      setImportSummary(null);
+      setIsSuccess(false);
+
+      const result = await syncBridgeService.importVault(
+        file,
+        (track) => {
+          return new Promise((resolve) => {
+            setConflict({ track, resolve: (action) => {
+              setConflict(null);
+              resolve(action);
+            }});
+          });
         },
-        () => {
-          // ignore scan errors
+        (msg, p) => {
+          setProgress({ current: p, total: 100, message: msg });
         }
       );
-    } catch (err) {
-      console.error(err);
-      setIsCameraActive(false);
-      setCameraError("No se pudo acceder a la cámara. Revisa permisos.");
-    }
-  };
 
-  const generatePin = () => {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-  };
-
-  const startHosting = async () => {
-    try {
-      setConnectionState('connecting');
-      const newPin = generatePin();
-      setPin(newPin);
-      await syncService.initializeAsHost(newPin);
-      setPerspective('host');
-    } catch (error) {
-      console.error(error);
-      setConnectionState('error');
-    }
-  };
-
-  const startClientConnect = async (targetPin: string) => {
-    try {
-      setConnectionState('connecting');
-      setPerspective('client');
-      await syncService.connectAsClient(targetPin);
-    } catch (error) {
-      console.error(error);
-      setConnectionState('error');
-    }
-  };
-
-  // Clean up camera if perspective changes away from client connection
-  useEffect(() => {
-    if (perspective !== 'client' || connectionState !== 'disconnected') {
-      stopCamera();
-    }
-  }, [perspective, connectionState]);
-
-  const handleStartSendingData = async () => {
-    if (connectionState !== 'connected') return;
-    setIsTransferring(true);
-    setIsSuccess(false);
-    setProgress({ current: 0, total: 100 }); // indeterminate start
-    try {
-      await syncService.transferData(sendMode, selectedPlaylist, (current, total) => {
-        setProgress({ current, total });
-      });
-      setIsTransferring(false);
+      setImportSummary(result);
       setIsSuccess(true);
-    } catch(e) {
-      console.error(e);
-      setConnectionState('error');
+    } catch (error) {
+      console.error(error);
+      alert("Error al importar la bóveda. Asegúrate de que sea un archivo .mssync válido.");
+    } finally {
+      setIsProcessing(false);
     }
-  };
-
-  const handleResetNetwork = () => {
-    syncService.disconnect();
-    setPerspective('idle');
-    setConnectionState('disconnected');
-    setDebugLogs(prev => [`[${new Date().toLocaleTimeString()}] ♻️ Sessión de red reiniciada manualmente.`, ...prev]);
   };
 
   return (
@@ -174,248 +96,162 @@ export const SyncCenterView: React.FC = () => {
              </div>
              <Smartphone className="w-16 h-16 text-blue-500 opacity-80" />
           </motion.div>
-          <h1 className="text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase">Sync Center</h1>
+          <h1 className="text-3xl md:text-5xl font-black text-[var(--text-main)] italic tracking-tighter uppercase">Sync Center</h1>
           <p className="text-[10px] md:text-xs font-black text-[var(--text-muted)] uppercase tracking-[0.4em] italic leading-loose">
-            Red WebRTC de Transferencia P2P <br className="md:hidden" />
-            <span className="text-blue-400 opacity-80">(Recomendado: Misma red Wi-Fi)</span>
+            Bóveda de Sincronización Universal <br className="md:hidden" />
+            <span className="text-emerald-400 opacity-80">(Música & Listas sin pérdida de calidad)</span>
           </p>
         </header>
 
         {perspective === 'idle' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-            <button onClick={startHosting} className="group bg-[var(--bg-card)] border border-white/5 hover:border-emerald-500/50 p-8 rounded-3xl transition-all shadow-xl hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] flex flex-col items-center text-center">
+            <button onClick={() => setPerspective('host')} className="group bg-[var(--bg-card)] border border-white/5 hover:border-emerald-500/50 p-8 rounded-3xl transition-all shadow-xl hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] flex flex-col items-center text-center">
                <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                 <Send className="w-10 h-10 text-emerald-500" />
+                 <FileArchive className="w-10 h-10 text-emerald-500" />
                </div>
-               <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic mb-4">Compartir Música</h3>
-               <p className="text-sm font-bold text-[var(--text-muted)] leading-relaxed">Conviertete en el servidor anfitrión para enviar tu biblioteca o tus playlists a otro de tus dispositivos.</p>
+               <h3 className="text-2xl font-black text-[var(--text-main)] uppercase tracking-tighter italic mb-4">Exportar Bóveda</h3>
+               <p className="text-sm font-bold text-[var(--text-muted)] leading-relaxed">Genera un archivo .mssync con tu biblioteca completa para llevarla a otro dispositivo.</p>
             </button>
 
             <button onClick={() => setPerspective('client')} className="group bg-[var(--bg-card)] border border-white/5 hover:border-blue-500/50 p-8 rounded-3xl transition-all shadow-xl hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] flex flex-col items-center text-center">
                <div className="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                 <Download className="w-10 h-10 text-blue-500" />
+                 <ArrowUpCircle className="w-10 h-10 text-blue-500" />
                </div>
-               <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic mb-4">Recibir Música</h3>
-               <p className="text-sm font-bold text-[var(--text-muted)] leading-relaxed">Conéctate a la sala usando un código PIN o escaneando un código QR desde la cámara de tu celular.</p>
+               <h3 className="text-2xl font-black text-[var(--text-main)] uppercase tracking-tighter italic mb-4">Importar Bóveda</h3>
+               <p className="text-sm font-bold text-[var(--text-muted)] leading-relaxed">Carga un archivo .mssync para reconstruir tu biblioteca de música instantáneamente.</p>
             </button>
           </div>
         )}
 
         {perspective !== 'idle' && (
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-[var(--bg-card)] border border-white/10 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden">
-            
-            {/* Status indicator */}
-            <div className={`absolute top-6 right-6 flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${
-              connectionState === 'connected' ? 'bg-emerald-500/20 text-emerald-400' :
-              connectionState === 'connecting' ? 'bg-orange-500/20 text-orange-400' :
-              connectionState === 'error' ? 'bg-red-500/20 text-red-400' : 'bg-white/10 text-white/50'
-            }`}>
-              <Wifi className={`w-3 h-3 ${connectionState === 'connecting' && 'animate-pulse'}`} />
-              {connectionState === 'connected' ? 'CONECTADO P2P' :
-               connectionState === 'connecting' ? 'BUSCANDO PARES...' :
-               connectionState === 'error' ? 'ERROR DE RED' : 'DESCONECTADO'}
-            </div>
-
-            <button onClick={() => { syncService.disconnect(); setPerspective('idle'); setIsSuccess(false); }} className="absolute py-2 top-6 left-6 text-xs text-white/50 hover:text-white uppercase font-black tracking-widest">
-              ← Cancelar
+            <button onClick={() => { setPerspective('idle'); setIsSuccess(false); setImportSummary(null); }} className="absolute py-2 top-6 left-6 text-xs text-white/50 hover:text-white uppercase font-black tracking-widest">
+              ← Volver
             </button>
 
-            {/* HOST VIEW */}
             {perspective === 'host' && (
               <div className="flex flex-col items-center pt-8">
-                {connectionState !== 'connected' ? (
-                  <>
-                    <h2 className="text-3xl font-black italic uppercase text-white mb-2">Escanea para Unirte</h2>
-                    <p className="text-[var(--text-muted)] font-bold text-center mb-8">Usa MusicScript en el otro dispositivo para escanear este QR o ingresa el código PIN manualmente.</p>
-                    
-                    <div className="bg-white p-4 rounded-2xl shadow-lg mb-8">
-                      <QRCodeSVG value={pin} size={200} level="H" fgColor="#000" bgColor="#fff" />
+                <h2 className="text-3xl font-black italic uppercase text-[var(--text-main)] mb-2">Preparar Bóveda</h2>
+                <p className="text-[var(--text-muted)] font-bold text-center mb-12 max-w-md">Vamos a empaquetar tus {libraryData.librarySongs.length} canciones y {playlistsData.playlists.length} listas en un solo archivo optimizado.</p>
+
+                {!isProcessing && !isSuccess && (
+                  <button 
+                    onClick={handleExport}
+                    className="group relative bg-emerald-600 hover:bg-emerald-500 text-white p-10 rounded-[32px] transition-all shadow-2xl hover:shadow-emerald-500/20 active:scale-95 flex flex-col items-center gap-4"
+                  >
+                    <Download className="w-12 h-12 group-hover:-translate-y-1 transition-transform" />
+                    <span className="text-xl font-black uppercase italic tracking-tighter">Generar Archivo .mssync</span>
+                  </button>
+                )}
+
+                {isProcessing && (
+                  <div className="w-full max-w-md bg-black/30 p-8 rounded-3xl border border-white/5 text-center">
+                    <RefreshCw className="w-10 h-10 text-emerald-500 animate-spin mx-auto mb-6" />
+                    <p className="font-black text-[var(--text-main)] uppercase italic text-sm mb-4 tracking-widest">{progress.message}</p>
+                    <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden mb-3">
+                      <div className="bg-emerald-500 h-full transition-all duration-300" style={{ width: `${progress.current}%` }} />
                     </div>
+                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">{progress.current}% COMPLETADO</p>
+                  </div>
+                )}
 
-                    <div className="text-center">
-                      <p className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">O ingresa este PIN temporal:</p>
-                      <span className="text-5xl font-black tracking-widest text-emerald-400 font-mono tracking-[0.2em]">{pin}</span>
+                {isSuccess && (
+                  <div className="text-center animate-in fade-in zoom-in-95">
+                    <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Check className="w-12 h-12 text-emerald-500" />
                     </div>
-                  </>
-                ) : (
-                  <div className="w-full max-w-lg space-y-8 animate-in fade-in zoom-in-95">
-                    <div className="text-center">
-                      <div className="w-20 h-20 mx-auto bg-emerald-500/20 rounded-full flex items-center justify-center mb-4">
-                        <Check className="w-10 h-10 text-emerald-500" />
-                      </div>
-                      <h2 className="text-3xl font-black italic uppercase text-white mb-2">¡Dispositivo Conectado!</h2>
-                      <p className="text-[var(--text-muted)] font-bold">Selecciona qué datos vas a transferir al cliente.</p>
-                    </div>
-
-                    <div className="flex flex-col gap-4 bg-black/20 p-6 rounded-3xl border border-white/5">
-                      <label className="flex items-center gap-3 p-4 border border-white/10 rounded-2xl cursor-pointer hover:bg-white/5 transition-colors">
-                        <input type="radio" checked={sendMode === 'library'} onChange={() => setSendMode('library')} className="accent-emerald-500 w-5 h-5" />
-                        <div>
-                          <p className="font-black text-white italic uppercase">Bóveda Completa</p>
-                          <p className="text-xs text-[var(--text-muted)]">Transfiere toda la base de datos de canciones (.mp3/.wav).</p>
-                        </div>
-                      </label>
-                      <label className="flex items-center gap-3 p-4 border border-white/10 rounded-2xl cursor-pointer hover:bg-white/5 transition-colors">
-                        <input type="radio" checked={sendMode === 'playlist'} onChange={() => setSendMode('playlist')} className="accent-emerald-500 w-5 h-5" />
-                        <div className="flex-1">
-                          <p className="font-black text-white italic uppercase mb-1">Solo una Playlist</p>
-                          {sendMode === 'playlist' && (
-                            <select 
-                              value={selectedPlaylist} 
-                              onChange={(e) => setSelectedPlaylist(e.target.value)} 
-                              className="w-full mt-2 bg-black/40 border border-white/10 text-white rounded-lg p-2 text-sm focus:outline-none focus:border-emerald-500"
-                            >
-                              <option value="">Selecciona una playlist...</option>
-                              {playlistsData.playlists.map(p => (
-                                <option key={p.id} value={p.id}>{p.name} ({p.songIds.length} pistas)</option>
-                              ))}
-                            </select>
-                          )}
-                        </div>
-                      </label>
-                    </div>
-
-                    {!isTransferring && !isSuccess && (
-                      <button 
-                        onClick={handleStartSendingData}
-                        disabled={sendMode === 'playlist' && !selectedPlaylist}
-                        className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-black uppercase tracking-widest py-4 rounded-xl shadow-lg transition-all"
-                      >
-                        Iniciar Transferencia P2P
-                      </button>
-                    )}
-
-                    {isTransferring && (
-                      <div className="bg-black/30 p-6 rounded-2xl border border-emerald-500/20 text-center">
-                        <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin mx-auto mb-4" />
-                        <p className="font-bold text-[var(--text-muted)] text-sm mb-2">Enviando paquete webRTC...</p>
-                        <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden mb-2">
-                           <div className="bg-emerald-500 h-full transition-all duration-300" style={{ width: progress.total ? `${(progress.current / progress.total) * 100}%` : '0%' }} />
-                        </div>
-                        <p className="text-xs text-white/50">{progress.current} de {progress.total} pistas</p>
-                      </div>
-                    )}
-
-                    {isSuccess && (
-                      <div className="bg-emerald-500/10 p-6 rounded-2xl border border-emerald-500/30 text-center">
-                        <Check className="w-12 h-12 text-emerald-500 mx-auto mb-2" />
-                        <h3 className="font-black text-emerald-400 uppercase italic">¡Transferencia Completa!</h3>
-                      </div>
-                    )}
-
+                    <h3 className="text-3xl font-black text-[var(--text-main)] uppercase italic mb-2 tracking-tighter">¡Bóveda Generada!</h3>
+                    <p className="text-[var(--text-muted)] font-bold mb-8">El archivo ya debería estar en tu carpeta de descargas.</p>
+                    <button onClick={() => setPerspective('idle')} className="text-xs font-black text-white/30 hover:text-white uppercase tracking-widest">Finalizar</button>
                   </div>
                 )}
               </div>
             )}
 
-            {/* CLIENT VIEW */}
             {perspective === 'client' && (
               <div className="flex flex-col items-center pt-8">
-                {connectionState !== 'connected' ? (
-                  <>
-                    <h2 className="text-3xl font-black italic uppercase text-white mb-2">Ingresa al Servidor</h2>
-                    <p className="text-[var(--text-muted)] font-bold text-center mb-8">Escanea el QR en la pantalla de la PC principal, o ingresa su código PIN aquí manualmente.</p>
-                    <div className="w-full max-w-sm mb-6 flex flex-col items-center">
-                      <div id="reader" className={`${isCameraActive ? 'border border-blue-500/30' : ''} w-full rounded-3xl overflow-hidden shadow-2xl bg-black/40 mb-4`} />
-                      
-                      {!isCameraActive && (
-                        <button 
-                          onClick={startCamera}
-                          className="bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/40 w-full py-4 rounded-2xl font-black uppercase tracking-widest transition-all"
-                        >
-                          Escanear QR (Cámara Trasera)
-                        </button>
-                      )}
-                      
-                      {cameraError && (
-                        <p className="text-red-400 text-xs font-bold mt-2">{cameraError}</p>
-                      )}
-                    </div>
+                <h2 className="text-3xl font-black italic uppercase text-[var(--text-main)] mb-2">Importar Bóveda</h2>
+                <p className="text-[var(--text-muted)] font-bold text-center mb-12 max-w-sm">Selecciona el archivo .mssync para añadir la música a tu biblioteca local.</p>
 
-                    <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm relative z-20">
-                      <input 
-                        type="text" 
-                        value={clientPinInput}
-                        onChange={(e) => setClientPinInput(e.target.value.toUpperCase())}
-                        placeholder="O INGRESA PIN"
-                        className="flex-1 bg-black/40 border border-white/10 text-white rounded-2xl py-4 px-6 font-mono text-xl sm:text-2xl text-center tracking-[0.3em] focus:outline-none focus:border-blue-500 transition-colors uppercase h-16 w-full"
-                      />
-                      <button 
-                        onClick={() => startClientConnect(clientPinInput)}
-                        disabled={!clientPinInput || clientPinInput.length < 4 || connectionState === 'connecting'}
-                        className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-8 h-16 sm:h-auto font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl hover:shadow-blue-500/20"
-                      >
-                        {connectionState === 'connecting' ? 'Conectando...' : 'Conectar'}
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="w-full max-w-lg space-y-8 animate-in fade-in zoom-in-95 text-center mt-12">
-                     <div className="w-20 h-20 mx-auto bg-blue-500/20 rounded-full flex items-center justify-center mb-4 relative">
-                        <ArrowRightLeft className="w-10 h-10 text-blue-500" />
-                        {isTransferring && (
-                          <div className="absolute inset-0 border-4 border-t-blue-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
-                        )}
-                     </div>
-                     <h2 className="text-3xl font-black italic uppercase text-white mb-2">
-                       {isSuccess ? '¡Completado!' : isTransferring ? 'Recibiendo Pistas...' : 'Esperando Host...'}
-                     </h2>
-                     <p className="text-[var(--text-muted)] font-bold">
-                       {isSuccess ? 'Los archivos han sido guardados en tu IndexedDB local.' : isTransferring ? `Descargando: ${lastReceivedTrack}` : 'Esperando a que la computadora principal inicie la transferencia.'}
-                     </p>
+                {!isProcessing && !isSuccess && (
+                   <label className="group w-full max-w-md h-64 border-2 border-dashed border-white/10 hover:border-blue-500/40 rounded-[40px] flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-blue-500/5 transition-all">
+                      <input type="file" accept=".mssync" onChange={handleImport} className="hidden" />
+                      <ArrowUpCircle className="w-16 h-16 text-blue-500/50 group-hover:text-blue-500 transition-colors" />
+                      <p className="text-center">
+                        <span className="block font-black text-[var(--text-main)] uppercase italic text-lg tracking-tighter">Click para buscar</span>
+                        <span className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-widest">o arrastra el archivo aquí</span>
+                      </p>
+                   </label>
+                )}
 
-                     {(isTransferring || isSuccess) && (
-                       <div className="bg-black/30 p-6 rounded-2xl border border-blue-500/20 text-center mt-8">
-                         <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden mb-2">
-                            <div className="bg-blue-500 h-full transition-all duration-300" style={{ width: progress.total ? `${(progress.current / progress.total) * 100}%` : '0%' }} />
-                         </div>
-                         <p className="text-xs font-black uppercase tracking-widest text-blue-400">{progress.total ? Math.round((progress.current / progress.total) * 100) : 0}% COMPLETADO</p>
+                {isProcessing && (
+                  <div className="w-full max-w-md bg-black/30 p-8 rounded-3xl border border-white/5 text-center">
+                    <RefreshCw className="w-10 h-10 text-blue-500 animate-spin mx-auto mb-6" />
+                    <p className="font-black text-[var(--text-main)] uppercase italic text-sm mb-4 tracking-widest">{progress.message}</p>
+                    <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden mb-3">
+                      <div className="bg-blue-500 h-full transition-all duration-300" style={{ width: `${progress.current}%` }} />
+                    </div>
+                  </div>
+                )}
+
+                {isSuccess && importSummary && (
+                  <div className="text-center animate-in fade-in zoom-in-95">
+                    <div className="w-24 h-24 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <History className="w-12 h-12 text-blue-500" />
+                    </div>
+                    <h3 className="text-3xl font-black text-[var(--text-main)] uppercase italic mb-2 tracking-tighter">¡Sincronización Exitosa!</h3>
+                    <div className="flex justify-center gap-6 mt-6 mb-8">
+                       <div className="text-center">
+                         <p className="text-2xl font-black text-emerald-400">{importSummary.imported}</p>
+                         <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">Nuevas</p>
                        </div>
-                     )}
+                       <div className="text-center">
+                         <p className="text-2xl font-black text-blue-400">{importSummary.replaced}</p>
+                         <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">Reemplazadas</p>
+                       </div>
+                       <div className="text-center">
+                         <p className="text-2xl font-black text-white/30">{importSummary.skipped}</p>
+                         <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">Omitidas</p>
+                       </div>
+                    </div>
+                    <button onClick={() => window.location.reload()} className="bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all">Ver mi Biblioteca</button>
                   </div>
                 )}
               </div>
             )}
-
           </motion.div>
         )}
 
-
-        {/* DEBUG CONSOLE */}
-        <div className="mt-8 border-t border-white/5 pt-8">
-          <button 
-            onClick={() => setShowDebug(!showDebug)}
-            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30 hover:text-white/60 transition-colors mx-auto"
-          >
-            <RefreshCw className={`w-3 h-3 ${showDebug && 'rotate-180'} transition-transform`} />
-            {showDebug ? 'Ocultar Consola Técnica' : 'Ver Logs Técnicos de Diagnóstico'}
-          </button>
-
-          {showDebug && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              className="mt-6 bg-black/60 border border-white/10 rounded-2xl p-4 font-mono text-[10px] max-h-60 overflow-y-auto custom-scrollbar shadow-inner"
-            >
-              <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
-                <span className="text-blue-400 font-black uppercase tracking-widest">WebRTC debug_console v1.1</span>
-                <div className="flex gap-4">
-                  <button onClick={handleResetNetwork} className="text-[9px] text-orange-400 hover:text-orange-300 uppercase font-black">Forzar Reinicio</button>
-                  <button onClick={() => setDebugLogs([])} className="text-[9px] text-white/30 hover:text-white uppercase font-black">Limpiar</button>
+        {/* MODALES / DIÁLOGOS DE CONFLICTO */}
+        {conflict && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[var(--bg-card)] border border-white/10 rounded-[32px] p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
+                <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto">
+                   <AlertCircle className="w-8 h-8 text-orange-500" />
                 </div>
-              </div>
-              <div className="space-y-1">
-                {debugLogs.length === 0 && <p className="text-white/20 italic">No hay logs registrados...</p>}
-                {debugLogs.map((log, i) => (
-                  <p key={i} className={`${log.includes('Error') ? 'text-red-400' : log.includes('SUCCESS') ? 'text-emerald-400' : 'text-white/70'}`}>
-                    {log}
-                  </p>
-                ))}
-                <div ref={logEndRef} />
-              </div>
-            </motion.div>
-          )}
-        </div>
+                <div className="space-y-2">
+                   <h3 className="text-2xl font-black text-[var(--text-main)] uppercase italic tracking-tighter">Canción Duplicada</h3>
+                   <p className="text-sm font-bold text-[var(--text-muted)] italic leading-relaxed">
+                     La canción <span className="text-[var(--text-main)]">"{conflict.track.title}"</span> ya se encuentra en tu biblioteca. <br/>¿Qué deseas hacer?
+                   </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                   <button 
+                     onClick={() => conflict.resolve('skip')}
+                     className="bg-white/5 hover:bg-white/10 text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest transition-all"
+                   >
+                     Omitir
+                   </button>
+                   <button 
+                     onClick={() => conflict.resolve('replace')}
+                     className="bg-orange-600 hover:bg-orange-500 text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest transition-all shadow-lg hover:shadow-orange-500/20"
+                   >
+                     Reemplazar
+                   </button>
+                </div>
+             </motion.div>
+          </div>
+        )}
 
       </div>
     </div>
