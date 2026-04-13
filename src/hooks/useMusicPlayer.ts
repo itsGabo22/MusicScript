@@ -21,24 +21,39 @@ export const useMusicPlayer = () => {
   }, [playlist]);
 
   const setQueue = (newSongs: Song[]) => {
-    const previousIndexId = playlist.getCurrent()?.id;
     const wasPlaying = isPlaying;
+    const currentTrackId = currentSong?.id;
     
+    // 1. Update the underlying DLL
     playlist.clear();
     newSongs.forEach(s => playlist.add(s));
     
-    if (previousIndexId) {
-       playlist.setCurrentById(previousIndexId);
+    // 2. Try to re-sync the current pointer in the NEW list
+    if (currentTrackId) {
+       const found = playlist.setCurrentById(currentTrackId);
+       
+       // If the playing song is NOT in the new list, we don't clear it.
+       // We keep it as the 'Active' song, but the DLL internal pointer is now null or first.
+       // The UI will still show the current song but 'Next' will trigger the next logic from the new list.
+       if (!found) {
+         // Current song exists as a 'loose' track not in the current active view
+         // This is fine, we just update the 'songs' state for the list view
+         setSongs(newSongs);
+       } else {
+         syncState();
+       }
+    } else {
+      syncState();
     }
-    syncState();
     
-    // Resume if it was playing before the queue update
+    // 3. Resume audio if it was playing (avoid browser-induced pauses)
     if (wasPlaying) {
       setTimeout(() => {
-        audioRef.current?.play().catch(() => {
-          // If play fails (browser block), we just sync the state
-          setIsPlaying(false);
-        });
+        if (audioRef.current && audioRef.current.paused) {
+          audioRef.current.play().catch(() => {
+            setIsPlaying(false);
+          });
+        }
       }, 0);
     }
   };
