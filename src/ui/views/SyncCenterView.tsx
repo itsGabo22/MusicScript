@@ -24,6 +24,9 @@ export const SyncCenterView: React.FC = () => {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const qrCodeRef = React.useRef<Html5Qrcode | null>(null);
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const [showDebug, setShowDebug] = useState(false);
+  const logEndRef = React.useRef<HTMLDivElement>(null);
 
   // Host options
   const [sendMode, setSendMode] = useState<SyncMode>('library');
@@ -42,6 +45,13 @@ export const SyncCenterView: React.FC = () => {
     syncService.onTransferComplete = () => {
       setIsTransferring(false);
       setIsSuccess(true);
+    };
+
+
+    
+    syncService.onDebugLog = (msg) => {
+      const timestamp = new Date().toLocaleTimeString();
+      setDebugLogs(prev => [`[${timestamp}] ${msg}`, ...prev].slice(0, 50));
     };
 
     return () => {
@@ -362,6 +372,40 @@ export const SyncCenterView: React.FC = () => {
 
           </motion.div>
         )}
+
+
+        {/* DEBUG CONSOLE */}
+        <div className="mt-8 border-t border-white/5 pt-8">
+          <button 
+            onClick={() => setShowDebug(!showDebug)}
+            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30 hover:text-white/60 transition-colors mx-auto"
+          >
+            <RefreshCw className={`w-3 h-3 ${showDebug && 'rotate-180'} transition-transform`} />
+            {showDebug ? 'Ocultar Consola Técnica' : 'Ver Logs Técnicos de Diagnóstico'}
+          </button>
+
+          {showDebug && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              className="mt-6 bg-black/60 border border-white/10 rounded-2xl p-4 font-mono text-[10px] max-h-60 overflow-y-auto custom-scrollbar shadow-inner"
+            >
+              <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
+                <span className="text-blue-400 font-black uppercase tracking-widest">WebRTC debug_console v1.0</span>
+                <button onClick={() => setDebugLogs([])} className="text-[9px] text-white/30 hover:text-white uppercase font-black">Limpiar</button>
+              </div>
+              <div className="space-y-1">
+                {debugLogs.length === 0 && <p className="text-white/20 italic">No hay logs registrados...</p>}
+                {debugLogs.map((log, i) => (
+                  <p key={i} className={`${log.includes('Error') ? 'text-red-400' : log.includes('SUCCESS') ? 'text-emerald-400' : 'text-white/70'}`}>
+                    {log}
+                  </p>
+                ))}
+                <div ref={logEndRef} />
+              </div>
+            </motion.div>
+          )}
+        </div>
 
       </div>
     </div>
