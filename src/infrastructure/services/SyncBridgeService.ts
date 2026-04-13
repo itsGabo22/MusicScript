@@ -13,12 +13,25 @@ export interface SyncVaultData {
 
 export class SyncBridgeService {
   /**
-   * Bundles the entire library and playlists into a .mssync (ZIP) file
+   * Bundles the entire library or a specific playlist into a .mssync (ZIP) file
    */
-  async exportVault(onProgress?: (msg: string, percent: number) => void): Promise<Blob> {
+  async exportVault(
+    onProgress?: (msg: string, percent: number) => void, 
+    playlistId?: string
+  ): Promise<Blob> {
     const zip = new JSZip();
-    const tracks = await libraryRepo.getAllTracks();
-    const playlists = await playlistRepo.getAllPlaylists();
+    let tracks = await libraryRepo.getAllTracks();
+    let playlists = await playlistRepo.getAllPlaylists();
+
+    if (playlistId) {
+      const targetPlaylist = playlists.find(p => p.id === playlistId);
+      if (targetPlaylist) {
+        // Only include tracks present in this playlist
+        const trackIds = new Set(targetPlaylist.songIds);
+        tracks = tracks.filter(t => trackIds.has(t.id));
+        playlists = [targetPlaylist];
+      }
+    }
 
     if (onProgress) onProgress('Preparando metadatos...', 5);
 
@@ -47,7 +60,7 @@ export class SyncBridgeService {
     return await zip.generateAsync({ 
       type: 'blob',
       compression: 'DEFLATE',
-      compressionOptions: { level: 6 } // Balance between speed and size
+      compressionOptions: { level: 6 }
     });
   }
 

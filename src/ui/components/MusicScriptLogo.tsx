@@ -52,7 +52,7 @@ const MusicScriptLogo = ({ className = "w-full h-full", showText = true }: { cla
         fontFamily="system-ui, -apple-system, sans-serif" 
         fontSize="32" 
         fontWeight="800" 
-        fill="#ffffff" 
+        fill="currentColor" 
         textAnchor="middle" 
         letterSpacing="5"
       >
