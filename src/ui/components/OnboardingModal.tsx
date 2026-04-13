@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Bot, SlidersHorizontal, Scissors, LayoutDashboard, Check } from 'lucide-react';
+import { ChevronRight, Bot, SlidersHorizontal, Scissors, LayoutDashboard, Check, FileAudio } from 'lucide-react';
 import MusicScriptLogo from './MusicScriptLogo';
 
 interface OnboardingModalProps {
@@ -17,22 +17,29 @@ const slides = [
     iconColor: "text-emerald-400"
   },
   {
-    title: "Audio Profesional",
-    description: "Toca el ícono de engranaje (herramientas) en cualquier canción de tu biblioteca para Recortarla nativamente en MP3/WAV. Usa el Ecualizador en la barra inferior para mejorar el sonido en tiempo real.",
-    icon: <div className="flex gap-4"><SlidersHorizontal className="w-12 h-12" /><Scissors className="w-12 h-12" /></div>,
-    color: "from-blue-500/20 to-cyan-900/20",
+    title: "Agrega tu Música",
+    description: "Para empezar, pulsa el botón '+ AÑADIR' en la esquina superior de tu Biblioteca y sube tus archivos MP3 descargados. ¡MusicScript extraerá los nombres y carátulas por sí solo!",
+    icon: <FileAudio className="w-16 h-16" />,
+    color: "from-blue-500/20 to-indigo-900/20",
     iconColor: "text-blue-400"
   },
   {
-    title: "Asistente Intelectual (IA)",
+    title: "Audio Profesional",
+    description: "Toca el ícono de engranaje (herramientas) en cualquier canción de tu biblioteca para Recortarla nativamente en MP3/WAV. Usa el Ecualizador en la barra inferior para mejorar el sonido en tiempo real.",
+    icon: <div className="flex gap-4"><SlidersHorizontal className="w-12 h-12" /><Scissors className="w-12 h-12" /></div>,
+    color: "from-indigo-500/20 to-cyan-900/20",
+    iconColor: "text-indigo-400"
+  },
+  {
+    title: "Asistente Inteligente (IA)",
     description: "Hemos integrado el cerebro de Gemini 2.0 Flash. Pídele a tu bot que analice tu biblioteca y tus favoritos para recomendarte o generarte listas de reproducción afines a tu humor.",
     icon: <Bot className="w-16 h-16" />,
     color: "from-purple-500/20 to-fuchsia-900/20",
     iconColor: "text-purple-400"
   },
   {
-    title: "Tu Experiencia Visual",
-    description: "Navega entre vistas de Ipod clásico, Cassette, e inventarios de Letras Holográficas para cada momento musical. ¡Es hora de subir el volumen!",
+    title: "Todo en un solo lugar",
+    description: "Adéntrate en modos iPod, Cassette o lee letras Holográficas. NOTA: Puedes repasar toda esta información en detalle abriendo el Menú (las 3 rayitas en celular) y entrando al MANUAL en la barra izquierda.",
     icon: <LayoutDashboard className="w-16 h-16" />,
     color: "from-orange-500/20 to-rose-900/20",
     iconColor: "text-orange-400"
