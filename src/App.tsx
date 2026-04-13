@@ -39,6 +39,11 @@ function App() {
   const [activeLyrics, setActiveLyrics] = useState<{ plain: string | null; synced: string | null } | null>(null);
   const [isLyricsLoading, setIsLyricsLoading] = useState(false);
   const [isLyricsOpen, setIsLyricsOpen] = useState(false);
+  const [showTranslation, setShowTranslation] = useState(() => localStorage.getItem('ms_show_translation') === 'true');
+
+  useEffect(() => {
+    localStorage.setItem('ms_show_translation', showTranslation.toString());
+  }, [showTranslation]);
   
   const appContainerRef = useRef<HTMLDivElement>(null);
   const prevViewRef = useRef<string>('');
@@ -246,6 +251,8 @@ function App() {
                 onCloseLyrics={() => setIsLyricsOpen(false)}
                 currentTime={player.currentTime}
                 onSeek={player.seek}
+                showTranslation={showTranslation}
+                onToggleTranslation={() => setShowTranslation(!showTranslation)}
                 coverUrl={activeSong?.coverUrl}
                 onAddClick={() => {
                    setEditingTrack(null);

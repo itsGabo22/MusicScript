@@ -51,11 +51,11 @@ export const LyricsService = {
     // Prepare a structured prompt to get a line-by-line translation
     const prompt = `Traduce las siguientes líneas de una canción al ESPAÑOL. 
 Mantén exactamente el mismo número de líneas y el orden. 
-IMPORTANTE: Devuelve únicamente las líneas traducidas, sin preámbulos, sin notas y sin números.
-Si una línea es instrumental o ruidos, déjala en blanco.
+IMPORTANTE: Devuelve únicamente las líneas traducidas con el formato "L[número]: Traducción", sin preámbulos ni notas.
+Si una línea es instrumental o ruidos, pon "L[número]: ".
 
 Líneas a traducir:
-${lines.join('\n')}`;
+${lines.map((l, i) => `L${i}: ${l}`).join('\n')}`;
 
     try {
       const response = await axios.post(
@@ -66,10 +66,17 @@ ${lines.join('\n')}`;
       );
 
       const text = response.data.candidates[0].content.parts[0].text;
-      const translatedLines = text.split('\n').map((l: string) => l.trim());
+      const rawLines = text.split('\n');
       
-      // Ensure we match the original length
-      return lines.map((_, i) => translatedLines[i] || "");
+      const translatedMap: Record<number, string> = {};
+      rawLines.forEach((l: string) => {
+        const match = l.match(/L(\d+):\s*(.*)/);
+        if (match) {
+          translatedMap[parseInt(match[1])] = match[2].trim();
+        }
+      });
+
+      return lines.map((_, i) => translatedMap[i] || "");
     } catch (error) {
       console.error('Translation failed:', error);
       return lines.map(() => "");

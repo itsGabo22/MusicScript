@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Heart, Trash2, ListMusic, Plus, MoreVertical, Edit2, Scissors } from 'lucide-react';
+import { Play, Heart, Trash2, ListMusic, Plus, MoreVertical, Edit2, Scissors, Languages } from 'lucide-react';
 import type { Song } from '../../core/entities/Song';
 import LyricsDisplay from '../components/LyricsDisplay';
 import AmbientVisualizer from '../components/AmbientVisualizer';
@@ -22,6 +22,8 @@ interface DefaultPlayerProps {
   onCloseLyrics: () => void;
   currentTime: number;
   onSeek: (time: number) => void;
+  showTranslation?: boolean;
+  onToggleTranslation?: () => void;
   coverUrl?: string | null;
 }
 
@@ -40,7 +42,9 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
   isLyricsLoading,
   onCloseLyrics,
   currentTime,
-  onSeek
+  onSeek,
+  showTranslation,
+  onToggleTranslation
 }) => {
   const songs = player.songs;
   const currentSong = player.currentSong;
@@ -91,6 +95,7 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
                 artist={currentSong.artist}
                 currentTime={currentTime}
                 onSeek={onSeek}
+                showTranslation={showTranslation}
                 coverUrl={currentSong.coverUrl}
               />
             )}
@@ -119,14 +124,26 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
             </motion.p>
           </div>
           
-          {currentSong && (
-            <button 
-               onClick={() => onFetchLyrics(currentSong.id)}
-               className={`p-2.5 md:p-3.5 rounded-2xl transition-all shadow-xl active:scale-90 flex-shrink-0 ${isLyricsOpen ? 'bg-emerald-600 text-white' : 'bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-emerald-500 hover:border-emerald-500/50 border border-[var(--border-color)]'}`}
-            >
-               <ListMusic className="w-5 h-5 md:w-7 md:h-7" />
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {isLyricsOpen && (
+              <button 
+                 onClick={onToggleTranslation}
+                 title="Traducir letras (Gemini AI)"
+                 className={`p-2.5 md:p-3.5 rounded-2xl transition-all shadow-xl active:scale-90 flex-shrink-0 animate-in zoom-in duration-300 ${showTranslation ? 'bg-indigo-600 text-white shadow-indigo-500/20' : 'bg-[var(--bg-card)] text-[var(--text-muted)] border border-[var(--border-color)]'}`}
+              >
+                 <Languages className="w-5 h-5 md:w-7 md:h-7" />
+              </button>
+            )}
+            
+            {currentSong && (
+              <button 
+                 onClick={() => onFetchLyrics(currentSong.id)}
+                 className={`p-2.5 md:p-3.5 rounded-2xl transition-all shadow-xl active:scale-90 flex-shrink-0 ${isLyricsOpen ? 'bg-emerald-600 text-white' : 'bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-emerald-500 hover:border-emerald-500/50 border border-[var(--border-color)]'}`}
+              >
+                 <ListMusic className="w-5 h-5 md:w-7 md:h-7" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -146,7 +163,7 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
           </button>
         </header>
 
-        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar smooth-scroll">
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar smooth-scroll mx-2 md:mx-0 bg-black/5 md:bg-transparent rounded-[32px] p-2 md:p-0">
           <div className="space-y-3">
             {songs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 opacity-30 text-center">
