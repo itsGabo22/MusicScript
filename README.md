@@ -1,13 +1,9 @@
 # 🎵 MusicScript: Advanced Music Player
 
-**MusicScript** es un reproductor de música moderno y de alto rendimiento construido con **React**, **TypeScript** y **Vite**. Este proyecto fue desarrollado como parte del **Taller de Listas Doblemente Enlazadas**, combinando conceptos fundamentales de estructuras de datos con una interfaz de usuario premium y las herramientas de desarrollo más rápidas del ecosistema actual.
+Desarrollé **MusicScript** como un reproductor de música moderno y de alto rendimiento construido con **React**, **TypeScript** y **Vite**. Este proyecto forma parte de mi **Taller de Listas Doblemente Enlazadas**, donde combino conceptos fundamentales de estructuras de datos con una interfaz de usuario premium y las herramientas de desarrollo más rápidas del ecosistema actual.
 
 > [!TIP]
-> Dado que MusicScript utiliza **IndexedDB** para la persistencia, todos los datos de tus usuarios se guardarán de forma segura en sus propios navegadores, sin necesidad de configurar bases de datos externas pesadas.
-
----
-
-**MusicScript** es un reproductor de música moderno y de alto rendimiento construido con **React**, **TypeScript** y **Vite**. Este proyecto fue desarrollado como parte del **Taller de Listas Doblemente Enlazadas**, combinando conceptos fundamentales de estructuras de datos con una interfaz de usuario premium y las herramientas de desarrollo más rápidas del ecosistema actual.
+> Dado que MusicScript utiliza **IndexedDB** para la persistencia, todos los datos de los usuarios se guardarán de forma segura en sus propios navegadores, sin necesidad de configurar bases de datos externas pesadas.
 
 ---
 
@@ -80,9 +76,9 @@ export class DoublyLinkedList<T> {
 
 ## 📦 Arquitectura de Persistencia (LocalStorage & IndexedDB)
 
-Para asegurar que las canciones no se pierdan al recargar la página o reiniciar el servidor, hemos implementado una capa de persistencia avanzada:
+Para asegurar que las canciones no se pierdan al recargar la página o reiniciar el servidor, he implementado una capa de persistencia avanzada:
 
-- **Dexie.js (IndexedDB):** Utilizamos IndexedDB para almacenar no solo los metadatos (título, artista), sino los archivos de audio reales en formato **Blob**.
+- **Dexie.js (IndexedDB):** Utilizo IndexedDB para almacenar no solo los metadatos (título, artista), sino los archivos de audio reales en formato **Blob**.
 - **Acceso Offline:** Una vez cargada una canción, se guarda en el disco local del navegador, permitiendo que la aplicación funcione instantáneamente en futuras sesiones.
 
 ---
@@ -105,7 +101,7 @@ Más allá de lo básico, MusicScript ofrece:
 ## ⚡ Funcionalidades Avanzadas (Fase 2 - Finalizada)
 
 
-La Fase 2 elevó a MusicScript de ser un reproductor básico a una aplicación de audio de nivel profesional, integrando algoritmos avanzados y refinamientos de UX:
+Con la Fase 2, elevé a MusicScript de ser un reproductor básico a una aplicación de audio de nivel profesional, integrando algoritmos avanzados y refinamientos de UX:
 
 1. **Ordenamiento Manual Persistente (Estructuras de Datos):**
    - Implementación de **Fractional Indexing** ($O(1)$) para permitir el movimiento de canciones a cualquier posición (Inicio, Fin o Índice X) de forma quirúrgica.
@@ -118,9 +114,7 @@ La Fase 2 elevó a MusicScript de ser un reproductor básico a una aplicación d
 
 ---
 
-## 🤖 Inteligencia Artificial & Edición de Audio Pro (Fase 3 - Finalizada)
-
-La tercera entrega consagra a MusicScript no solo como un reproductor, sino como una estación de música inteligente y autónoma, procesando toda la multimedia _In-Browser_:
+En la tercera entrega, consolidé a MusicScript no solo como un reproductor, sino como una estación de música inteligente y autónoma, procesando toda la multimedia _In-Browser_:
 
 1. **Recorte de Audio y Codificación Nativa:**
    - **Editor No Lineal**: Recorta canciones con precisión milimétrica usando cursores visuales duales.
@@ -137,7 +131,7 @@ La tercera entrega consagra a MusicScript no solo como un reproductor, sino como
 
 ## 🌐 Sync Center: Bóveda de Sincronización (.mssync) (Fase 4 - Finalizada)
 
-La cuarta fase transforma a MusicScript en un ecosistema portable mediante un sistema de **Bóveda Universal**, diseñado específicamente para la transferencia entre computadoras y el respaldo de datos:
+En la cuarta fase, transformé a MusicScript en un ecosistema portable mediante un sistema de **Bóveda Universal**, diseñado específicamente para la transferencia entre computadoras y el respaldo de datos:
 
 1. **Vault Sync Protocol (.mssync):**
    - **Enfoque PC-to-PC**: Optimizado para migrar tu biblioteca entre navegadores (ej. de Chrome a Firefox) o entre diferentes computadoras sin depender de una cuenta en la nube.
@@ -153,7 +147,7 @@ La cuarta fase transforma a MusicScript en un ecosistema portable mediante un si
 
 ## 🚀 Futuro de MusicScript (Roadmap)
 
-Aunque MusicScript es actualmente una aplicación basada en almacenamiento local (`IndexedDB`), tenemos una visión para escalar el proyecto:
+Aunque MusicScript es actualmente una aplicación basada en almacenamiento local (`IndexedDB`), tengo una visión clara para escalar el proyecto:
 
 *   **Autenticación y Perfiles**: Implementar un sistema de usuarios (Firebase/Supabase) para que la música te siga a cualquier dispositivo sin mover archivos.
 *   **Base de Datos Global**: Migrar a una arquitectura en la nube que permita la sincronización en tiempo real y la compartición comunitaria de playlists.
