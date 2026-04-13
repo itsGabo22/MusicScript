@@ -34,13 +34,15 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [translatedLines, setTranslatedLines] = useState<string[]>([]);
+  const [isAIProcessing, setIsAIProcessing] = useState(false);
   const lastUserInteraction = useRef<number>(0);
   const isTranslating = useRef(false);
 
-  // RESET state when song changes
+  // RESET state when song changes (redundant if keyed but good for safety)
   useEffect(() => {
     setTranslatedLines([]);
     isTranslating.current = false;
+    setIsAIProcessing(false);
   }, [title, artist]);
 
   // Parse LRC format: [mm:ss.xx] Lyrics line
@@ -75,6 +77,7 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
       if (translatedLines.length > 0 || isTranslating.current) return;
       
       isTranslating.current = true;
+      setIsAIProcessing(true);
       try {
         const originalLines = parsedLyrics.map(l => l.text);
         const results = await LyricsService.translateLyrics(originalLines);
@@ -83,6 +86,7 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
         console.error("Error translation effect:", error);
       } finally {
         isTranslating.current = false;
+        setIsAIProcessing(false);
       }
     };
 
@@ -118,6 +122,18 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
     }, 1000);
     return () => clearInterval(checkInteraction);
   }, [isAutoScrolling]);
+
+  // RECALIBRATE SCROLL after translation loads
+  useEffect(() => {
+    if (translatedLines.length > 0 && isAutoScrolling) {
+      setTimeout(() => {
+        const activeElement = scrollRef.current?.querySelector('[data-active="true"]') as HTMLElement;
+        if (activeElement) {
+          activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+  }, [translatedLines.length]);
 
   // FIXED: Precision Auto-scroll "Pursuit" logic using native browser centering
   useEffect(() => {
@@ -161,6 +177,19 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
             <p className="text-[8px] text-emerald-500 font-black tracking-widest uppercase opacity-80">{artist}</p>
           </div>
         </div>
+
+        {/* Translation Status Indicator */}
+        {isAIProcessing && (
+          <motion.div 
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="hidden md:flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20 mr-4"
+          >
+            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Traduciendo con Gemini...</span>
+          </motion.div>
+        )}
+
         <button onClick={onClose} className="p-2 text-white/40 hover:text-white transition-all">
           <X className="w-6 h-6" />
         </button>
@@ -205,17 +234,17 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
                       filter: isActive ? 'blur(0px)' : 'blur(0.4px)'
                     }}
                     transition={{ duration: 0.5 }}
-                    className={`cursor-pointer transition-all text-center w-full px-4`}
+                    className={`cursor-pointer transition-all text-center w-full px-4 max-w-2xl mx-auto`}
                   >
-                    <p className={`font-black text-xl md:text-3xl lg:text-4xl leading-snug tracking-tight ${isActive ? 'text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'text-white/60'
+                    <p className={`font-black text-xl md:text-3xl lg:text-4xl leading-tight tracking-tight break-words ${isActive ? 'text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'text-white/60'
                       }`}>
                       {line.text}
                     </p>
                     {showTranslation && hasTranslation && (
                       <motion.p 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className={`text-[0.5em] md:text-[0.45em] font-bold italic mt-2 uppercase tracking-widest ${isActive ? 'text-white/60' : 'text-white/30'}`}
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: isActive ? 1 : 0.5, y: 0 }}
+                        className={`text-[0.6em] md:text-[0.55em] font-bold italic mt-3 uppercase tracking-widest leading-relaxed break-words max-w-[90%] mx-auto ${isActive ? 'text-white/80' : 'text-white/30'}`}
                       >
                         {translatedLines[idx]}
                       </motion.p>

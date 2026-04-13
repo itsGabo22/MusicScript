@@ -88,6 +88,7 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
           <AnimatePresence>
             {isLyricsOpen && currentSong && (
               <LyricsDisplay 
+                key={currentSong.id}
                 lyrics={activeLyrics}
                 isLoading={isLyricsLoading}
                 onClose={onCloseLyrics}
