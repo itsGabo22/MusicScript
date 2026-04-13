@@ -139,19 +139,19 @@ La tercera entrega consagra a MusicScript no solo como un reproductor, sino como
 
 ---
 
-## 🌐 Sync Center: Ecosistema P2P Descentralizado (Fase 4 - Finalizada)
+## 🌐 Sync Center: Bóveda de Sincronización (.mssync) (Fase 4 - Finalizada)
 
-La cuarta fase transforma a MusicScript de una herramienta aislada a un ecosistema interconectado sin depender de una nube centralizada, utilizando protocolos de red de vanguardia:
+La cuarta fase transforma a MusicScript de una herramienta aislada a un ecosistema interconectado mediante un sistema de **Bóveda Universal**, garantizando la transferencia de bibliotecas incluso en redes restringidas:
 
-1. **Sincronización WebRTC P2P (Peer-to-Peer):**
-   - **Transferencia Multi-Dispositivo**: Permite enviar Listas de Reproducción o la Biblioteca completa de una PC a un Celular (o entre PCs) de forma directa, idealmente bajo la misma red Wi-Fi para máxima velocidad.
-   - **Protocolo de Señalización PeerJS**: Establecimiento de túneles de datos seguros que permiten velocidades de red local (LAN) superiores para archivos pesados.
-   - **Algoritmo de Transferencia Secuencial**: Fragmentación inteligente de Buffers de audio para garantizar una importación fluida en `IndexedDB` sin saturar la memoria RAM del receptor.
-2. **Emparejamiento por QR y Token:**
-   - **Apretón de Manos Visual**: Generación dinámica de códigos QR para una conexión instantánea desde la cámara del móvil.
-   - **Fallback por PIN**: Sistema de tokens de 6 caracteres para emparejamiento manual entre equipos de escritorio.
+1. **Vault Sync Protocol (.mssync):**
+   - **Empaquetado de Alto Rendimiento**: Utiliza `JSZip` con algoritmos de compresión `DEFLATE` para serializar toda la base de datos (metadatos + archivos binarios de audio) en un único contenedor portable.
+   - **Independencia de Red**: Supera las limitaciones de WebRTC (NAT simétrica) permitiendo la transferencia vía archivos físicos, la nube o mensajería.
+   - **Gestión de Conflictos (Deduplicación)**: Durante la importación, el sistema aplica un algoritmo de chequeo de integridad que permite al usuario decidir entre **Omitir** o **Reemplazar** canciones duplicadas.
+2. **Interfaz de Sincronización Premium:**
+   - **Rediseño Full-Responsive**: Interfaz optimizada para móviles con indicadores de progreso dinámicos y auras animadas.
+   - **Onboarding Inteligente**: Tour de bienvenida actualizado que guía al usuario en el proceso de exportación e importación de bóvedas.
 3. **Persistencia Híbrida Remota-Local:**
-   - Toda pista recibida es procesada, re-codificada si es necesario y guardada permanentemente en el dispositivo receptor, manteniendo la independencia total del servidor.
+   - Toda pista importada es procesada y guardada permanentemente en `IndexedDB`, manteniendo la independencia total del dispositivo original.
 
 ---
 
@@ -167,7 +167,7 @@ La cuarta fase transforma a MusicScript de una herramienta aislada a un ecosiste
 | **Factory Pattern** | Carga e instanciación de objetos `Song` leyendo los metadatos binarios (ID33) a través de `PlaylistLoader`. |
 | **Singleton Pattern** | Unicidad global en servicios centrales estáticos como `AudioEditorService` y la Base de Datos IndexedDB (`MusicDatabase`). |
 | **Repository Pattern** | Capa de abstracción (`LibraryRepository`) que separa la lógica del dominio del motor de almacenamiento físico. |
-| **Sync Protocol (P2P)** | Comunicación bidireccional mediante DataChannels de WebRTC para la transferencia de archivos binarios (Blobs). |
+| **Sync Protocol (Vault)** | Serialización y compresión biyectiva de la base de datos en archivos `.mssync` mediante `JSZip`. |
 | **Clean Architecture** | Separación granular entre las capas `Core`, `Infrastructure` y de presentación `UI`. |
 
 ---
@@ -177,7 +177,7 @@ La cuarta fase transforma a MusicScript de una herramienta aislada a un ecosiste
 - **Fase 1:** Motor DLL, estructura de persistencia local, interfaz moderna responsiva y gestión básica de temas. ✅
 - **Fase 2:** Ordenamiento persistente avanzado, visualizador holográfico, sistema de letras sincronizadas y guía interactiva. ✅
 - **Fase 3:** Sistema autónomo de Procesamiento de Audio Puro (Cortador a MP3/WAV, Ecualizador via Decorator) e Inteligencia Artificial incrustada con Gemini. ✅
-- **Fase 4:** Centro de Sincronización WebRTC (P2P) para transferencia de bibliotecas entre dispositivos con emparejamiento QR/PIN. Proyecto Consolidado. 🚀🔥✅
+- **Fase 4:** Centro de Sincronización por Bóveda (.mssync) para transferencia de bibliotecas universales con gestión de duplicados y UI premium. Proyecto Consolidado. 🚀🔥✅
 
 ---
 *Desarrollado para el curso de Estructuras de Datos - Gabriel Paz 2026*
