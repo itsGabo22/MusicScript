@@ -16,26 +16,31 @@ export class SyncService {
   public onConnectionStateChange?: (state: 'disconnected' | 'connecting' | 'connected' | 'error') => void;
   public onTransferComplete?: () => void;
   public onConnectionError?: (err: Error) => void;
+  public onDebugLog?: (msg: string) => void;
 
   public initializeAsHost(customId?: string): Promise<string> {
     return new Promise((resolve, reject) => {
+      this.log(`Initializing Host... (ID: ${customId || 'random'})`);
       this.peer = customId ? new Peer(customId) : new Peer();
 
       this.peer.on('open', (id) => {
+        this.log(`Signaling: PC is LIVE with global ID: ${id}`);
         resolve(id);
       });
 
       this.peer.on('connection', (conn) => {
+        this.log(`Signaling: Incoming connection request detected from ${conn.peer}`);
         this.connection = conn;
         // Don't set to connected until Handshake is received
         // Listen to when the host side of the channel is open
         conn.on('open', () => {
-           console.log("Host side data channel opened.");
+           this.log(`WebRTC: Data channel with client is now formally OPEN on Host side.`);
         });
         this.setupConnectionListeners(conn, true);
       });
 
       this.peer.on('error', (err) => {
+        this.log(`Critical Peer Error: ${err.type} - ${err.message}`);
         if (this.onConnectionError) this.onConnectionError(err);
         reject(err);
       });
@@ -44,46 +49,62 @@ export class SyncService {
 
   public connectAsClient(hostId: string): Promise<void> {
     return new Promise((resolve, reject) => {
+      this.log(`Client: Connecting to target Host ID: ${hostId}...`);
       this.peer = new Peer();
       
-      this.peer.on('open', () => {
+      this.peer.on('open', (id) => {
+        this.log(`Client LIVE with ID: ${id}. Requesting connection to ${hostId}...`);
         if (this.onConnectionStateChange) this.onConnectionStateChange('connecting');
         const conn = this.peer!.connect(hostId, { reliable: true });
         
         conn.on('open', () => {
-          console.log("Client data channel explicitly open");
+          this.log(`WebRTC: Connection established with Host. Tunnel open.`);
           this.connection = conn;
           this.setupConnectionListeners(conn, false, resolve);
           
           // Send handshake with slight delay to ensure WebRTC channel is truly flushed
-          console.log("Sending Handshake to Host...");
+          this.log("Handshake: Sending GREETING to host...");
           let attempts = 0;
           const handshakeInterval = setInterval(() => {
             if (this.connection) {
+              this.log(`Handshake: Attempt ${attempts + 1}...`);
               this.connection.send({ type: 'HANDSHAKE' });
               attempts++;
-              if (attempts > 5) clearInterval(handshakeInterval);
+              if (attempts > 5) {
+                this.log(`Handshake: TIMEOUT after 5 attempts.`);
+                clearInterval(handshakeInterval);
+              }
             }
           }, 500);
 
           // Listen for our own custom event to clear interval if we succeed sooner
           conn.on('data', (d: any) => {
-            if (d && d.type === 'HANDSHAKE_ACK') clearInterval(handshakeInterval);
+            if (d && d.type === 'HANDSHAKE_ACK') {
+              this.log(`Handshake: SUCCESS! Protocol finalized.`);
+              clearInterval(handshakeInterval);
+            }
           });
 
         });
 
         conn.on('error', (err) => {
+          this.log(`WebRTC Error: ${err.message}`);
           if (this.onConnectionError) this.onConnectionError(err);
           reject(err);
         });
       });
 
       this.peer.on('error', (err) => {
+        this.log(`Peer Error: ${err.type} - ${err.message}`);
         if (this.onConnectionError) this.onConnectionError(err);
         reject(err);
       });
     });
+  }
+
+  private log(msg: string) {
+    console.log(`[SYNC] ${msg}`);
+    if (this.onDebugLog) this.onDebugLog(msg);
   }
 
   private setupConnectionListeners(conn: DataConnection, isHost: boolean, resolveClient?: () => void) {
