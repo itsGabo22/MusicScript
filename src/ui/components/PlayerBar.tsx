@@ -112,7 +112,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
       <div className="flex flex-col items-center gap-3 w-full max-w-4xl px-2 md:px-0 relative">
         
         {/* PLAYER CONTROLS */}
-        <div className="flex items-center gap-8 sm:gap-12">
+        <div className="flex items-center gap-4 sm:gap-10">
           <button 
             onClick={onToggleFavorite}
             className={`p-2 transition-all active:scale-75 z-[100] ${currentSong.isFavorite ? 'text-emerald-500' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
@@ -120,7 +120,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
             <Heart className={`w-6 h-6 ${currentSong.isFavorite ? 'fill-current' : ''}`} />
           </button>
           
-          <div className="flex items-center gap-8 sm:gap-12 text-[var(--text-main)]">
+          <div className="flex items-center gap-4 sm:gap-10 text-[var(--text-main)]">
             <button onClick={onPrev} className="p-2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-all active:scale-90 z-50">
               <SkipBack className="w-7 h-7 fill-current" />
             </button>

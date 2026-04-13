@@ -25,9 +25,19 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ songs, favorites, playlists, 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [tempSettings, setTempSettings] = useState({ name: botName, persona: botPersona, photo: botPhoto });
 
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', text: `¡Hola! Soy ${botName}. Puedo recomendarte música, darte datos curiosos o ayudarte a descubrir canciones según tu humor.\n\n💡 _Dato curioso:_ Puedes **personalizar mi nombre y mi personalidad** tocando el ícono de engranaje (⚙️) que se encuentra aquí arriba.` }
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem('ms_bot_chat_history');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // ignore parsing error and fallback
+      }
+    }
+    return [
+      { role: 'ai', text: `¡Hola! Soy ${botName}. Puedo recomendarte música, darte datos curiosos o ayudarte a descubrir canciones según tu humor.\n\n💡 _Dato curioso:_ Puedes **personalizar mi nombre y mi personalidad** tocando el ícono de engranaje (⚙️) que se encuentra aquí arriba.` }
+    ];
+  });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -37,6 +47,10 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ songs, favorites, playlists, 
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    localStorage.setItem('ms_bot_chat_history', JSON.stringify(messages));
+  }, [messages]);
 
   const handleSaveSettings = () => {
     setBotName(tempSettings.name);
