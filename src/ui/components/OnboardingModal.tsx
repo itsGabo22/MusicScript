@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronLeft, Bot, SlidersHorizontal, Scissors, LayoutDashboard, Check } from 'lucide-react';
+import { ChevronRight, Bot, SlidersHorizontal, Scissors, LayoutDashboard, Check } from 'lucide-react';
 import MusicScriptLogo from './MusicScriptLogo';
 
 interface OnboardingModalProps {
