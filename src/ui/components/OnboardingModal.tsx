@@ -32,7 +32,7 @@ const slides = [
   },
   {
     title: "Sincroniza tus Equipos",
-    description: "¡Fase 4 Activa! Transfiere tus canciones de PC a Celular sin cables mediante una red P2P segura. Conecta ambos a la misma red Wi-Fi para una transferencia ultrarrápida.",
+    description: "Transfiere tus canciones de PC a Celular sin cables mediante una red P2P segura. Conecta ambos a la misma red Wi-Fi para una transferencia ultrarrápida.",
     icon: <Network className="w-16 h-16" />,
     color: "from-blue-500/20 to-indigo-900/20",
     iconColor: "text-blue-400"
@@ -76,7 +76,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
     <AnimatePresence>
       <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
         {/* Backdrop */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -85,7 +85,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
         />
 
         {/* Modal Window */}
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -97,7 +97,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
 
           {/* Slide Content */}
           <div className="relative p-8 md:p-12 pb-6 min-h-[350px] flex flex-col items-center text-center justify-center">
-            
+
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSlide}
@@ -110,27 +110,27 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                 <div className={`mb-6 p-4 rounded-full bg-white/5 border border-white/10 ${slides[currentSlide].iconColor}`}>
                   {slides[currentSlide].icon}
                 </div>
-                
+
                 <h2 className="text-3xl md:text-5xl font-black italic tracking-tighter text-white mb-4 uppercase">
                   {slides[currentSlide].title}
                 </h2>
-                
+
                 <p className="text-[var(--text-muted)] text-base md:text-lg leading-relaxed max-w-md mx-auto">
                   {slides[currentSlide].description}
                 </p>
               </motion.div>
             </AnimatePresence>
-            
+
           </div>
 
           {/* Footer Controls */}
           <div className="relative p-6 md:p-8 bg-black/20 border-t border-white/5 flex items-center justify-between">
-            
+
             {/* Dots */}
             <div className="flex items-center gap-2">
               {slides.map((_, i) => (
-                <div 
-                  key={i} 
+                <div
+                  key={i}
                   className={`h-2 rounded-full transition-all duration-300 ${i === currentSlide ? 'w-8 bg-emerald-500' : 'w-2 bg-white/20'}`}
                 />
               ))}
@@ -139,15 +139,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
             {/* Buttons */}
             <div className="flex gap-4">
               {currentSlide > 0 && (
-                <button 
+                <button
                   onClick={handlePrev}
                   className="p-3 md:px-6 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all active:scale-95 font-bold tracking-widest text-xs uppercase"
                 >
                   Atrás
                 </button>
               )}
-              
-              <button 
+
+              <button
                 onClick={handleNext}
                 className="flex items-center gap-2 px-6 md:px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all active:scale-95 font-black tracking-widest text-xs uppercase shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]"
               >
@@ -159,7 +159,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
               </button>
             </div>
           </div>
-          
+
         </motion.div>
       </div>
     </AnimatePresence>

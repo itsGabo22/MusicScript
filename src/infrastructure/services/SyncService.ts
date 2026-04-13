@@ -59,12 +59,10 @@ export class SyncService {
           console.log("Sending Handshake to Host...");
           let attempts = 0;
           const handshakeInterval = setInterval(() => {
-            if (this.connection && this.connection.open) {
+            if (this.connection) {
               this.connection.send({ type: 'HANDSHAKE' });
               attempts++;
-              if (attempts > 5) clearInterval(handshakeInterval); // stop trying after 5 times
-            } else {
-              clearInterval(handshakeInterval);
+              if (attempts > 5) clearInterval(handshakeInterval);
             }
           }, 500);
 
