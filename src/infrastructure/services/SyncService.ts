@@ -1,4 +1,6 @@
-import { Peer, DataConnection } from 'peerjs';
+import { Peer } from 'peerjs';
+// Using any for the connection type to avoid export errors with PeerJS types in Vite
+type DataConnection = any;
 import { libraryRepo } from '../persistence/LibraryRepository';
 import { playlistRepo } from '../persistence/PlaylistRepository';
 import type { TrackRecord } from '../persistence/MusicDatabase';

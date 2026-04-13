@@ -227,7 +227,7 @@ function App() {
       >
         <div className="flex flex-col h-full relative">
           <main className={`flex-1 w-full lg:overflow-hidden relative pt-4 lg:pt-0 flex flex-col ${viewMode !== 'modern' ? 'items-center justify-center p-4' : ''}`}>
-            {viewMode === 'modern' && activeView !== 'guide' && activeView !== 'ai' && (
+            {viewMode === 'modern' && activeView !== 'guide' && activeView !== 'ai' && activeView !== 'sync' && (
               <DefaultPlayer 
                 player={player} 
                 onToggleFavorite={handleToggleFavorite}
