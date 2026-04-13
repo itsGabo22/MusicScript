@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Download, FileAudio, Info, Scissors, SlidersHorizontal, Bot } from 'lucide-react';
+import { ExternalLink, Download, FileAudio, Info, Scissors, SlidersHorizontal, Bot, Network } from 'lucide-react';
 import MusicScriptLogo from '../components/MusicScriptLogo';
 
 const GuideView: React.FC = () => {
@@ -131,6 +131,21 @@ const GuideView: React.FC = () => {
               <StepItem num="1" text="Ingresa al ícono del Cerebro en el menú lateral." />
               <StepItem num="2" text="Pídele recomendaciones basadas en tu humor actual." />
               <StepItem num="3" text="Personaliza su Nombre y Comportamiento desde la Configuración de la IA." />
+            </ul>
+          </GuideCard>
+
+          {/* Sync Center */}
+          <GuideCard 
+            step="Pro"
+            title="Sincronización P2P"
+            icon={<Network className="w-7 h-7 text-blue-500" />}
+            color="border-blue-500/20 hover:border-blue-500/50"
+          >
+            <p className="text-sm text-[var(--text-muted)] font-bold mb-6">Transfiere tu música de PC a Móvil sin cables ni nubes (Recomendado: misma red Wi-Fi).</p>
+            <ul className="space-y-4">
+              <StepItem num="1" text="Entra a 'Sync P2P' en tu PC y elige qué enviar (Playlist o Bóveda)." />
+              <StepItem num="2" text="En tu celular, entra a la misma sección y escanea el código QR." />
+              <StepItem num="3" text="¡Listo! Los archivos volarán directo a la memoria de tu teléfono." />
             </ul>
           </GuideCard>
 

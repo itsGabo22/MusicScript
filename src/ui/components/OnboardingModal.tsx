@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Bot, SlidersHorizontal, Scissors, LayoutDashboard, Check, FileAudio } from 'lucide-react';
+import { ChevronRight, Bot, SlidersHorizontal, Scissors, LayoutDashboard, Check, FileAudio, Network } from 'lucide-react';
 import MusicScriptLogo from './MusicScriptLogo';
 
 interface OnboardingModalProps {
@@ -29,6 +29,13 @@ const slides = [
     icon: <div className="flex gap-4"><SlidersHorizontal className="w-12 h-12" /><Scissors className="w-12 h-12" /></div>,
     color: "from-indigo-500/20 to-cyan-900/20",
     iconColor: "text-indigo-400"
+  },
+  {
+    title: "Sincroniza tus Equipos",
+    description: "¡Fase 4 Activa! Transfiere tus canciones de PC a Celular sin cables mediante una red P2P segura. Conecta ambos a la misma red Wi-Fi para una transferencia ultrarrápida.",
+    icon: <Network className="w-16 h-16" />,
+    color: "from-blue-500/20 to-indigo-900/20",
+    iconColor: "text-blue-400"
   },
   {
     title: "Asistente Inteligente (IA)",
