@@ -10,6 +10,7 @@ interface PlayerBarProps {
   currentTime: number;
   duration: number;
   volume: number;
+  sourceTitle?: string;
   onTogglePlay: () => void;
   onNext: () => void;
   onPrev: () => void;
@@ -25,6 +26,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
   currentTime,
   duration,
   volume,
+  sourceTitle,
   onTogglePlay,
   onNext,
   onPrev,
@@ -107,9 +109,33 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
     <motion.div 
       initial={{ y: 100 }}
       animate={{ y: 0 }}
-      className="fixed bottom-0 left-0 right-0 h-24 md:h-28 bg-[var(--bg-glass)] backdrop-blur-3xl border-t border-white/5 z-[80] px-4 md:px-8 flex items-center justify-center transition-all duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.3)]"
+      className="fixed bottom-0 left-0 right-0 h-24 md:h-28 bg-[var(--bg-glass)] backdrop-blur-3xl border-t border-white/5 z-[80] px-4 md:px-8 flex items-center justify-between transition-all duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.3)]"
     >
-      <div className="flex flex-col items-center gap-3 w-full max-w-4xl px-2 md:px-0 relative">
+      {/* SONG INFO (LEFT - RESPONSIVE) */}
+      <div className="hidden md:flex items-center gap-3 lg:gap-4 w-40 lg:w-64">
+        <div className="relative group cursor-pointer shrink-0" onClick={() => window.dispatchEvent(new CustomEvent('toggleLyrics'))}>
+          <img 
+            src={currentSong.coverUrl || 'https://picsum.photos/100/100'} 
+            className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl object-cover border border-white/10 group-hover:border-emerald-500/50 transition-all"
+            alt="Cover"
+          />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 rounded-xl flex items-center justify-center transition-all">
+            <Maximize2 className="w-3 h-3 text-white" />
+          </div>
+        </div>
+        <div className="min-w-0 pr-2">
+          <h4 className="text-[11px] lg:text-sm font-black text-white truncate italic uppercase tracking-tight">{currentSong.title}</h4>
+          <p className="hidden lg:block text-[10px] text-emerald-500 font-bold truncate tracking-widest uppercase opacity-80">{currentSong.artist}</p>
+          {sourceTitle && (
+            <div className="hidden lg:flex items-center gap-1.5 mt-1">
+              <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
+              <span className="text-[7px] font-black text-white/30 uppercase tracking-[0.2em] truncate">Suena de: {sourceTitle}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center gap-2 md:gap-3 flex-1 max-w-2xl px-1 md:px-0 relative">
         
         {/* PLAYER CONTROLS */}
         <div className="flex items-center gap-4 sm:gap-10">

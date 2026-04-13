@@ -64,14 +64,14 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({ isOpen, onClose 
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 md:p-6 transition-all">
           {/* Presets */}
-          <div className="flex overflow-x-auto gap-2 pb-4 mb-6 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex overflow-x-auto gap-2 pb-4 mb-4 md:mb-6 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
             {Object.keys(PRESETS).map((preset) => (
               <button
                 key={preset}
                 onClick={() => applyPreset(preset)}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+                className={`whitespace-nowrap px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-xs font-bold transition-all border ${
                   activePreset === preset 
                     ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20' 
                     : 'bg-black/20 text-[var(--text-muted)] border-[var(--border-color)] hover:bg-black/40 hover:text-white'
@@ -82,30 +82,38 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({ isOpen, onClose 
             ))}
           </div>
 
-          {/* Sliders */}
-          <div className="flex justify-between h-56 bg-black/40 rounded-3xl p-6 border border-white/5 shadow-inner backdrop-blur-xl">
-            {gains.map((gain, idx) => (
-              <div key={idx} className="flex flex-col items-center gap-4">
-                <span className="text-[10px] font-black text-emerald-400 w-6 text-center tabular-nums">
-                  {gain > 0 ? '+' : ''}{gain}
-                </span>
-                <input
-                  type="range"
-                  min="-12"
-                  max="12"
-                  step="1"
-                  value={gain}
-                  onChange={(e) => handleGainChange(idx, parseFloat(e.target.value))}
-                  className="w-1.5 h-full bg-zinc-800 rounded-full appearance-none outline-none focus:outline-none cursor-pointer"
-                  style={{
-                    writingMode: 'vertical-lr',
-                    direction: 'rtl',
-                    accentColor: '#10b981'
-                  } as any}
-                />
-                <span className="text-[9px] font-black tracking-wider text-zinc-500 uppercase">{BANDS[idx]}</span>
-              </div>
-            ))}
+          {/* Sliders Container */}
+          <div className="flex justify-between h-48 md:h-56 bg-black/40 rounded-[32px] p-4 md:p-6 border border-white/5 shadow-inner backdrop-blur-xl gap-2">
+            {gains.map((gain, idx) => {
+              const DESCRIPTIONS = ['Graves', 'Bajos', 'Medios', 'Brillo', 'Aire'];
+              return (
+                <div key={idx} className="flex flex-col items-center gap-2 md:gap-4 flex-1">
+                  <span className="text-[9px] md:text-[10px] font-black text-emerald-400 w-full text-center tabular-nums">
+                    {gain > 0 ? '+' : ''}{gain}dB
+                  </span>
+                  <div className="relative flex-1 flex flex-col items-center">
+                    <input
+                      type="range"
+                      min="-12"
+                      max="12"
+                      step="1"
+                      value={gain}
+                      onChange={(e) => handleGainChange(idx, parseFloat(e.target.value))}
+                      className="w-1 md:w-1.5 h-full bg-zinc-800 rounded-full appearance-none outline-none focus:outline-none cursor-pointer"
+                      style={{
+                        writingMode: 'vertical-lr',
+                        direction: 'rtl',
+                        accentColor: '#10b981'
+                      } as any}
+                    />
+                  </div>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-[7px] md:text-[9px] font-black tracking-wider text-emerald-500/50 uppercase whitespace-nowrap">{BANDS[idx]}</span>
+                    <span className="text-[6px] md:text-[7px] font-black tracking-[0.1em] text-zinc-500 uppercase whitespace-nowrap opacity-60">{DESCRIPTIONS[idx]}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </motion.div>

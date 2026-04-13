@@ -22,6 +22,8 @@ export const useMusicPlayer = () => {
 
   const setQueue = (newSongs: Song[]) => {
     const previousIndexId = playlist.getCurrent()?.id;
+    const wasPlaying = isPlaying;
+    
     playlist.clear();
     newSongs.forEach(s => playlist.add(s));
     
@@ -29,6 +31,16 @@ export const useMusicPlayer = () => {
        playlist.setCurrentById(previousIndexId);
     }
     syncState();
+    
+    // Resume if it was playing before the queue update
+    if (wasPlaying) {
+      setTimeout(() => {
+        audioRef.current?.play().catch(() => {
+          // If play fails (browser block), we just sync the state
+          setIsPlaying(false);
+        });
+      }, 0);
+    }
   };
 
   const updateTrackMetadata = (id: string, metadata: Partial<Song>) => {

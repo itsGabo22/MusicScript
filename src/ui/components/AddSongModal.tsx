@@ -13,13 +13,13 @@ interface AddSongModalProps {
   editTrack?: Song | null; // NEW: Track being edited
 }
 
-const AddSongModal: React.FC<AddSongModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  onAdd, 
+const AddSongModal: React.FC<AddSongModalProps> = ({
+  isOpen,
+  onClose,
+  onAdd,
   onEdit,
-  playlistSize, 
-  editTrack 
+  playlistSize,
+  editTrack
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
@@ -56,7 +56,7 @@ const AddSongModal: React.FC<AddSongModalProps> = ({
         const tags = await PlaylistLoader.extractTags(selectedFile);
         if (tags.title) setTitle(tags.title);
         else setTitle(selectedFile.name.replace(/\.[^/.]+$/, ""));
-        
+
         if (tags.artist) setArtist(tags.artist);
         if (tags.coverUrl) setCoverUrl(tags.coverUrl);
         else setCoverUrl(null);
@@ -71,7 +71,7 @@ const AddSongModal: React.FC<AddSongModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const finalPos = positionType === 'index' ? index : positionType;
 
     if (editTrack && onEdit) {
@@ -93,20 +93,21 @@ const AddSongModal: React.FC<AddSongModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.9, opacity: 0, y: 30 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 30 }}
-            className="bg-[var(--bg-main)] w-full max-w-lg rounded-[40px] shadow-[0_32px_128px_rgba(0,0,0,0.5)] overflow-hidden border border-white/10"
+            className="bg-[var(--bg-main)] w-full max-w-lg rounded-[40px] shadow-[0_32px_128px_rgba(0,0,0,0.5)] overflow-hidden border border-white/10 flex flex-col max-h-[90vh]"
           >
             {/* Header */}
-            <div className={`p-8 border-b border-white/5 flex justify-between items-center ${isEditMode ? 'bg-indigo-600' : 'bg-emerald-600'}`}>
+            <div className={`p-6 md:p-8 border-b border-white/5 flex justify-between items-center shrink-0 ${isEditMode ? 'bg-indigo-600' : 'bg-emerald-600'}`}>
               <div>
                 <h3 className="text-xl md:text-2xl font-black text-white flex items-center gap-3 italic uppercase tracking-tighter">
                   {isEditMode ? <Save className="w-6 h-6" /> : <Music className="w-6 h-6" />}
                   {isEditMode ? 'Editar Canción' : 'Nueva Canción'}
                 </h3>
                 <p className="text-[10px] text-white/60 font-black uppercase tracking-[0.2em] mt-1 italic">
+                  {isEditMode ? 'Ajusta los metadatos y el orden' : 'Añade una pista a la biblioteca'}
                   {isEditMode ? 'Ajusta los metadatos y el orden' : 'Añade una pista a la biblioteca'}
                 </p>
               </div>
@@ -115,13 +116,22 @@ const AddSongModal: React.FC<AddSongModalProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-8 space-y-8">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-6 md:space-y-8">
+               {/* Metadata Info Alert */}
+               <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-3xl flex items-start gap-3">
+                  <div className="text-blue-500 text-lg">💡</div>
+                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest leading-relaxed">
+                    Escribe el título y artista tal cual para encontrar la portada oficial automáticamente.
+                  </p>
+               </div>
+
+               <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
               {/* File Upload (Only for New) */}
               {!isEditMode && (
                 <div className="relative group">
-                  <input 
-                    type="file" 
-                    accept="audio/*" 
+                  <input
+                    type="file"
+                    accept="audio/*"
                     onChange={handleFileChange}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     required={!isEditMode}
@@ -160,19 +170,19 @@ const AddSongModal: React.FC<AddSongModalProps> = ({
 
               {/* Edit Preview for Mode Edit */}
               {isEditMode && (
-                 <div className="flex items-center gap-6 p-6 bg-indigo-500/5 rounded-[32px] border border-indigo-500/10 mb-2">
-                    <div className="w-20 h-20 rounded-[28px] overflow-hidden shadow-2xl border border-white/10 shrink-0">
-                        {coverUrl ? (
-                          <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-slate-800 flex items-center justify-center"><Music className="w-8 h-8 text-white/20" /></div>
-                        )}
-                    </div>
-                    <div className="min-w-0">
-                       <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1 italic">Edición Quirúrgica</p>
-                       <h4 className="text-lg font-black text-[var(--text-main)] truncate italic uppercase">{editTrack?.title}</h4>
-                    </div>
-                 </div>
+                <div className="flex items-center gap-6 p-6 bg-indigo-500/5 rounded-[32px] border border-indigo-500/10 mb-2">
+                  <div className="w-20 h-20 rounded-[28px] overflow-hidden shadow-2xl border border-white/10 shrink-0">
+                    {coverUrl ? (
+                      <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-slate-800 flex items-center justify-center"><Music className="w-8 h-8 text-white/20" /></div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1 italic">Edición Quirúrgica</p>
+                    <h4 className="text-lg font-black text-[var(--text-main)] truncate italic uppercase">{editTrack?.title}</h4>
+                  </div>
+                </div>
               )}
 
               {/* Metadata Input */}
@@ -181,7 +191,7 @@ const AddSongModal: React.FC<AddSongModalProps> = ({
                   <label className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest flex items-center gap-2 italic">
                     <Music className="w-3.5 h-3.5" /> Título
                   </label>
-                  <input 
+                  <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -194,7 +204,7 @@ const AddSongModal: React.FC<AddSongModalProps> = ({
                   <label className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest flex items-center gap-2 italic">
                     <User className="w-3.5 h-3.5" /> Artista
                   </label>
-                  <input 
+                  <input
                     type="text"
                     value={artist}
                     onChange={(e) => setArtist(e.target.value)}
@@ -226,15 +236,15 @@ const AddSongModal: React.FC<AddSongModalProps> = ({
                     </button>
                   ))}
                 </div>
-                
+
                 {positionType === 'index' && (
-                  <motion.div 
+                  <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     className="flex items-center justify-between bg-emerald-500/5 p-5 rounded-[28px] border border-emerald-500/10"
                   >
                     <span className="text-xs font-black text-emerald-500 uppercase tracking-widest italic">Índice (0 - {playlistSize}):</span>
-                    <input 
+                    <input
                       type="number"
                       min="0"
                       max={playlistSize}
@@ -246,7 +256,7 @@ const AddSongModal: React.FC<AddSongModalProps> = ({
                 )}
               </div>
 
-              <button 
+              <button
                 type="submit"
                 disabled={!isEditMode && !file}
                 className={`w-full py-5 text-[11px] font-black uppercase tracking-[0.3em] rounded-3xl shadow-2xl transition-all active:scale-[0.98] ${isEditMode ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white disabled:bg-slate-300'}`}
@@ -254,6 +264,7 @@ const AddSongModal: React.FC<AddSongModalProps> = ({
                 {isEditMode ? 'Guardar Cambios' : 'Subir a Biblioteca'}
               </button>
             </form>
+            </div>
           </motion.div>
         </div>
       )}

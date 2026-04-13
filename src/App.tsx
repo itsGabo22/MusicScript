@@ -30,15 +30,16 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
   const [activeView, setActiveView] = useState('library');
+  const [sourceTitle, setSourceTitle] = useState('Todas las canciones');
+  const [isLyricsOpen, setIsLyricsOpen] = useState(false);
+  const [activeLyrics, setActiveLyrics] = useState<{ plain: string | null, synced: string | null } | null>(null);
+  const [isLyricsLoading, setIsLyricsLoading] = useState(false);
   const [pickingForTrackId, setPickingForTrackId] = useState<string | null>(null);
+
   const [editingTrack, setEditingTrack] = useState<Song | null>(null);
   const [trimmingTrack, setTrimmingTrack] = useState<Song | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(!localStorage.getItem('ms_tutorial_seen'));
   
-  // Lyrics State
-  const [activeLyrics, setActiveLyrics] = useState<{ plain: string | null; synced: string | null } | null>(null);
-  const [isLyricsLoading, setIsLyricsLoading] = useState(false);
-  const [isLyricsOpen, setIsLyricsOpen] = useState(false);
   const [showTranslation, setShowTranslation] = useState(() => localStorage.getItem('ms_show_translation') === 'true');
 
   useEffect(() => {
@@ -52,26 +53,34 @@ function App() {
   const lastQueueFingerprint = useRef<string>('');
 
   useEffect(() => {
-    // FIXED: Only update the player queue if the active view is a music container.
-    // This prevents static views like 'guide' from clearing the player's memory.
-    const isMusicView = activeView === 'library' || activeView === 'favorites' || playlists.playlists.some(p => p.id === activeView);
-    if (!isMusicView) return;
-
     let filteredSongs: Song[] = [];
+    let titleLine = 'Todas las canciones';
     
+    // Check if we are in a music view or an info view
+    const isMusicView = ['library', 'favorites', 'playlist'].includes(activeView);
+    const isPlaylistView = !['library', 'favorites', 'ai', 'sync', 'guide'].includes(activeView);
+    
+    if (!isMusicView && !isPlaylistView) return; 
+
     if (activeView === 'favorites') {
       filteredSongs = library.getFavorites();
+      titleLine = 'Favoritos';
     } else if (activeView === 'library') {
       filteredSongs = [...library.librarySongs];
+      titleLine = 'Todas las canciones';
     } else {
-      const playlist = playlists.playlists.find(p => p.id === activeView);
-      if (playlist) {
-        filteredSongs = playlist.songIds
-          .map(id => library.librarySongs.find(s => s.id === id))
-          .filter((s): s is any => !!s);
-      }
+        // Handle direct playlist ID or other music view
+        const playlist = playlists.playlists.find(p => p.id === activeView);
+        if (playlist) {
+          filteredSongs = playlist.songIds
+            .map(id => library.librarySongs.find(s => s.id === id))
+            .filter((s): s is Song => !!s);
+          titleLine = `Playlist: ${playlist.name}`;
+        }
     }
     
+    setSourceTitle(titleLine);
+
     // Fingerprint: A string representing the order and identity of the songs
     const currentFingerprint = filteredSongs.map(s => s.id).join(',');
     
@@ -86,7 +95,8 @@ function App() {
     }
     
     prevViewRef.current = activeView;
-  }, [activeView, library.librarySongs, playlists.playlists.length]);
+    setSourceTitle(titleLine);
+  }, [activeView, library.librarySongs, playlists.playlists]);
 
   // --- Audio Analyzer Initialization ---
   useEffect(() => {
@@ -144,6 +154,25 @@ function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [player, isLyricsOpen]);
+
+  // --- Global Event Listeners ---
+  useEffect(() => {
+    const handleToggleLyrics = () => {
+      // If no song is playing, we can't show lyrics
+      if (!player.currentSong) return;
+      
+      // If we are not in a music view (e.g. AI Assistant), we should switch back to library first
+      const isMusicView = ['library', 'favorites', 'playlist'].includes(activeView);
+      if (!isMusicView) {
+        setActiveView('library');
+      }
+      
+      setIsLyricsOpen(prev => !prev);
+    };
+
+    window.addEventListener('toggleLyrics', handleToggleLyrics);
+    return () => window.removeEventListener('toggleLyrics', handleToggleLyrics);
+  }, [player.currentSong, activeView]);
 
   // --- Theme ---
   useEffect(() => {
@@ -205,8 +234,14 @@ function App() {
   };
 
   useEffect(() => {
-    if (isLyricsOpen && activeSong) {
-      // IMMEDIATE RESET: Prevent stale lyrics from appearing or being translated
+    if (activeSong) {
+      // UX IMPROVEMENT: Close lyrics automatically on track change
+      // This forces the user to see the new coverArt and prevents stale translation state
+      if (isLyricsOpen) {
+        setIsLyricsOpen(false);
+      }
+      
+      // Reset lyrics state for next time
       setActiveLyrics(null);
       setIsLyricsLoading(true);
 
@@ -274,16 +309,18 @@ function App() {
               />
             )}
             {activeView === 'sync' && <SyncCenterView />}
+            
             {viewMode === 'ipod' && <IpodPlayer player={player} isDark={isDark} />}
             {viewMode === 'cassette' && <CassettePlayer player={player} isDark={isDark} />}
           </main>
 
           <PlayerBar 
-            currentSong={activeSong}
+            currentSong={player.currentSong}
             isPlaying={player.isPlaying}
             currentTime={player.currentTime}
             duration={player.duration}
             volume={player.volume}
+            sourceTitle={sourceTitle}
             onTogglePlay={player.togglePlay}
             onNext={player.next}
             onPrev={player.prev}
