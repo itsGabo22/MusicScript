@@ -7,6 +7,17 @@ import type { TrackRecord } from '../persistence/MusicDatabase';
 
 export type SyncMode = 'library' | 'playlist';
 
+// WebRTC configuration to bypass restrictive NATs using Google's public STUN servers
+const WEBRTC_CONFIG = {
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' }
+    ]
+  }
+};
+
 // A lightweight wrapper around PeerJS to handle specific logic
 export class SyncService {
   private peer: Peer | null = null;
@@ -21,7 +32,7 @@ export class SyncService {
   public initializeAsHost(customId?: string): Promise<string> {
     return new Promise((resolve, reject) => {
       this.log(`Initializing Host... (ID: ${customId || 'random'})`);
-      this.peer = customId ? new Peer(customId) : new Peer();
+      this.peer = customId ? new Peer(customId, WEBRTC_CONFIG) : new Peer(WEBRTC_CONFIG);
 
       this.peer.on('open', (id) => {
         this.log(`Signaling: PC is LIVE with global ID: ${id}`);
@@ -49,8 +60,8 @@ export class SyncService {
 
   public connectAsClient(hostId: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.log(`Client: Connecting to target Host ID: ${hostId}...`);
-      this.peer = new Peer();
+      this.log(`Client: Connecting to target Host ID: ${hostId}... (Using STUN)`);
+      this.peer = new Peer(WEBRTC_CONFIG);
       
       this.peer.on('open', (id) => {
         this.log(`Client LIVE with ID: ${id}. Requesting connection to ${hostId}...`);
