@@ -6,6 +6,7 @@ import DefaultPlayer from './ui/layouts/DefaultPlayer';
 import IpodPlayer from './ui/layouts/IpodPlayer';
 import CassettePlayer from './ui/layouts/CassettePlayer';
 import AddSongModal from './ui/components/AddSongModal';
+import { SyncCenterView } from './ui/views/SyncCenterView';
 import { SongEditorModal } from './ui/components/SongEditorModal';
 import AppShell from './ui/components/AppShell';
 import PlayerBar from './ui/components/PlayerBar';
@@ -261,6 +262,7 @@ function App() {
                 currentSong={activeSong}
               />
             )}
+            {activeView === 'sync' && <SyncCenterView />}
             {viewMode === 'ipod' && <IpodPlayer player={player} isDark={isDark} />}
             {viewMode === 'cassette' && <CassettePlayer player={player} isDark={isDark} />}
           </main>

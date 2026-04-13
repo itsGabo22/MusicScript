@@ -1,4 +1,4 @@
-import { Heart, ListMusic, Plus, Library, Trash2, X, Sun, Moon, LayoutGrid, Smartphone, Disc, HelpCircle, Sparkles } from 'lucide-react';
+import { X, Library, Heart, HelpCircle, LayoutGrid, Sparkles, Plus, ListMusic, Trash2, Smartphone, Disc, Sun, Moon, Network } from 'lucide-react';
 import MusicScriptLogo from './MusicScriptLogo';
 import type { PlaylistRecord } from '../../infrastructure/persistence/MusicDatabase';
 
@@ -76,6 +76,17 @@ const Sidebar: React.FC<SidebarProps> = ({
             label="Asistente IA"
             active={activeView === 'ai'}
             onClick={() => onViewChange('ai')}
+          />
+        </div>
+
+        {/* Sync Center */}
+        <div className="space-y-1">
+          <p className="px-4 text-[10px] font-black uppercase text-blue-500 tracking-[0.2em] mb-3 opacity-60">Conexión</p>
+          <NavItem
+            icon={<Network className="w-5 h-5" />}
+            label="Sync P2P"
+            active={activeView === 'sync'}
+            onClick={() => onViewChange('sync')}
           />
         </div>
 
