@@ -25,16 +25,26 @@ export const SyncCenterView: React.FC = () => {
 
   const playlistsData = usePlaylists();
   const libraryData = useLibrary();
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>('all');
 
   const handleExport = async () => {
     try {
       setIsProcessing(true);
       setIsSuccess(false);
+      
       const blob = await syncBridgeService.exportVault((msg, p) => {
         setProgress({ current: p, total: 100, message: msg });
-      });
+      }, selectedPlaylistId === 'all' ? undefined : selectedPlaylistId);
       
-      const filename = `MusicScript_Vault_${new Date().toISOString().split('T')[0]}.mssync`;
+      let filename = `MusicScript_Vault_${new Date().toISOString().split('T')[0]}.mssync`;
+      
+      if (selectedPlaylistId !== 'all') {
+        const pl = playlistsData.playlists.find(p => p.id === selectedPlaylistId);
+        if (pl) {
+          filename = `MusicScript_Playlist_${pl.name.replace(/\s+/g, '_')}.mssync`;
+        }
+      }
+
       syncBridgeService.downloadBlob(blob, filename);
       setIsSuccess(true);
     } catch (error) {
@@ -73,7 +83,7 @@ export const SyncCenterView: React.FC = () => {
       setIsSuccess(true);
     } catch (error) {
       console.error(error);
-      alert("Error al importar la bóveda. Asegúrate de que sea un archivo .mssync válido.");
+      alert("Error al importar la bóveda. Asegúrate de que sea un archivo .mssync o .zip válido.");
     } finally {
       setIsProcessing(false);
     }
@@ -96,8 +106,8 @@ export const SyncCenterView: React.FC = () => {
              </div>
              <Smartphone className="w-16 h-16 text-blue-500 opacity-80" />
           </motion.div>
-          <h1 className="text-3xl md:text-5xl font-black text-[var(--text-main)] italic tracking-tighter uppercase">Sync Center</h1>
-          <p className="text-[10px] md:text-xs font-black text-[var(--text-muted)] uppercase tracking-[0.4em] italic leading-loose">
+          <h1 className="text-3xl md:text-5xl font-black text-center text-[var(--text-main)] italic tracking-tighter uppercase">Sync Center</h1>
+          <p className="text-[10px] md:text-xs font-black text-center text-[var(--text-muted)] uppercase tracking-[0.4em] italic leading-loose mx-auto">
             Bóveda de Sincronización Universal <br className="md:hidden" />
             <span className="text-emerald-400 opacity-80">(Música & Listas sin pérdida de calidad)</span>
           </p>
@@ -109,16 +119,16 @@ export const SyncCenterView: React.FC = () => {
                <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                  <FileArchive className="w-10 h-10 text-emerald-500" />
                </div>
-               <h3 className="text-2xl font-black text-[var(--text-main)] uppercase tracking-tighter italic mb-4">Exportar Bóveda</h3>
-               <p className="text-sm font-bold text-[var(--text-muted)] leading-relaxed">Genera un archivo .mssync con tu biblioteca completa para llevarla a otro dispositivo.</p>
+               <h3 className="text-2xl font-black text-[var(--text-main)] text-center uppercase tracking-tighter italic mb-4">Exportar Bóveda</h3>
+               <p className="text-sm font-bold text-[var(--text-muted)] text-center leading-relaxed">Genera un archivo .mssync con tu música seleccionada para migrarla.</p>
             </button>
 
             <button onClick={() => setPerspective('client')} className="group bg-[var(--bg-card)] border border-white/5 hover:border-blue-500/50 p-8 rounded-3xl transition-all shadow-xl hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] flex flex-col items-center text-center">
                <div className="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                  <ArrowUpCircle className="w-10 h-10 text-blue-500" />
                </div>
-               <h3 className="text-2xl font-black text-[var(--text-main)] uppercase tracking-tighter italic mb-4">Importar Bóveda</h3>
-               <p className="text-sm font-bold text-[var(--text-muted)] leading-relaxed">Carga un archivo .mssync para reconstruir tu biblioteca de música instantáneamente.</p>
+               <h3 className="text-2xl font-black text-[var(--text-main)] text-center uppercase tracking-tighter italic mb-4">Importar Bóveda</h3>
+               <p className="text-sm font-bold text-[var(--text-muted)] text-center leading-relaxed">Carga un archivo .mssync o un .zip de WhatsApp para reconstruir tu biblioteca.</p>
             </button>
           </div>
         )}
@@ -131,38 +141,57 @@ export const SyncCenterView: React.FC = () => {
 
             {perspective === 'host' && (
               <div className="flex flex-col items-center pt-8">
-                <h2 className="text-3xl font-black italic uppercase text-[var(--text-main)] mb-2">Preparar Bóveda</h2>
-                <p className="text-[var(--text-muted)] font-bold text-center mb-12 max-w-md">Vamos a empaquetar tus {libraryData.librarySongs.length} canciones y {playlistsData.playlists.length} listas en un solo archivo optimizado.</p>
+                <h2 className="text-3xl font-black italic uppercase text-center text-[var(--text-main)] mb-2">Preparar Bóveda</h2>
+                <p className="text-[var(--text-muted)] font-bold text-center mb-10 max-w-md mx-auto">Selecciona qué contenido deseas incluir en el archivo portable.</p>
 
                 {!isProcessing && !isSuccess && (
-                  <button 
-                    onClick={handleExport}
-                    className="group relative bg-emerald-600 hover:bg-emerald-500 text-white p-10 rounded-[32px] transition-all shadow-2xl hover:shadow-emerald-500/20 active:scale-95 flex flex-col items-center gap-4"
-                  >
-                    <Download className="w-12 h-12 group-hover:-translate-y-1 transition-transform" />
-                    <span className="text-xl font-black uppercase italic tracking-tighter">Generar Archivo .mssync</span>
-                  </button>
+                  <div className="w-full flex flex-col items-center space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                    {/* Selector de Contenido */}
+                    <div className="w-full max-w-sm">
+                       <label className="text-[10px] font-black uppercase text-emerald-500 tracking-widest block mb-3 text-center">Contenido de la Bóveda</label>
+                       <select 
+                         value={selectedPlaylistId}
+                         onChange={(e) => setSelectedPlaylistId(e.target.value)}
+                         className="w-full bg-black/20 border border-white/5 text-white/80 p-4 rounded-2xl font-bold focus:border-emerald-500 outline-none transition-all appearance-none text-center cursor-pointer hover:bg-black/30"
+                       >
+                         <option value="all">Toda la Biblioteca ({libraryData.librarySongs.length} canciones)</option>
+                         <optgroup label="Exportar Playlist Específica">
+                            {playlistsData.playlists.map(pl => (
+                              <option key={pl.id} value={pl.id}>{pl.name} ({pl.songIds.length} canciones)</option>
+                            ))}
+                         </optgroup>
+                       </select>
+                    </div>
+
+                    <button 
+                      onClick={handleExport}
+                      className="group relative bg-emerald-600 hover:bg-emerald-500 text-white p-10 rounded-[32px] transition-all shadow-2xl hover:shadow-emerald-500/20 active:scale-95 flex flex-col items-center gap-4 w-full max-w-sm"
+                    >
+                      <Download className="w-12 h-12 group-hover:-translate-y-1 transition-transform" />
+                      <span className="text-xl font-black uppercase italic tracking-tighter">Generar Archivo .mssync</span>
+                    </button>
+                  </div>
                 )}
 
                 {isProcessing && (
-                  <div className="w-full max-w-md bg-black/30 p-8 rounded-3xl border border-white/5 text-center">
+                  <div className="w-full max-w-md bg-black/30 p-8 rounded-3xl border border-white/5 text-center mx-auto">
                     <RefreshCw className="w-10 h-10 text-emerald-500 animate-spin mx-auto mb-6" />
-                    <p className="font-black text-[var(--text-main)] uppercase italic text-sm mb-4 tracking-widest">{progress.message}</p>
+                    <p className="font-black text-[var(--text-main)] text-center uppercase italic text-sm mb-4 tracking-widest">{progress.message}</p>
                     <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden mb-3">
                       <div className="bg-emerald-500 h-full transition-all duration-300" style={{ width: `${progress.current}%` }} />
                     </div>
-                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">{progress.current}% COMPLETADO</p>
+                    <p className="text-[10px] font-black text-center text-white/40 uppercase tracking-widest">{progress.current}% COMPLETADO</p>
                   </div>
                 )}
 
                 {isSuccess && (
-                  <div className="text-center animate-in fade-in zoom-in-95">
+                  <div className="text-center animate-in fade-in zoom-in-95 w-full">
                     <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Check className="w-12 h-12 text-emerald-500" />
                     </div>
-                    <h3 className="text-3xl font-black text-[var(--text-main)] uppercase italic mb-2 tracking-tighter">¡Bóveda Generada!</h3>
-                    <p className="text-[var(--text-muted)] font-bold mb-8">El archivo ya debería estar en tu carpeta de descargas.</p>
-                    <button onClick={() => setPerspective('idle')} className="text-xs font-black text-white/30 hover:text-white uppercase tracking-widest">Finalizar</button>
+                    <h3 className="text-3xl font-black text-center text-[var(--text-main)] uppercase italic mb-2 tracking-tighter">¡Bóveda Generada!</h3>
+                    <p className="text-[var(--text-muted)] text-center font-bold mb-8">El archivo ya debería estar en tu carpeta de descargas.</p>
+                    <button onClick={() => setPerspective('idle')} className="text-xs font-black text-center text-white/30 hover:text-white uppercase tracking-widest mx-auto block">Finalizar</button>
                   </div>
                 )}
               </div>
@@ -170,12 +199,17 @@ export const SyncCenterView: React.FC = () => {
 
             {perspective === 'client' && (
               <div className="flex flex-col items-center pt-8">
-                <h2 className="text-3xl font-black italic uppercase text-[var(--text-main)] mb-2">Importar Bóveda</h2>
-                <p className="text-[var(--text-muted)] font-bold text-center mb-12 max-w-sm">Selecciona el archivo .mssync para añadir la música a tu biblioteca local.</p>
+                <h2 className="text-3xl font-black italic uppercase text-center text-[var(--text-main)] mb-2">Importar Bóveda</h2>
+                <p className="text-[var(--text-muted)] font-bold text-center mb-12 max-w-sm mx-auto">Selecciona el archivo .mssync (o .zip) para añadir la música a tu biblioteca local.</p>
 
                 {!isProcessing && !isSuccess && (
                    <label className="group w-full max-w-md h-64 border-2 border-dashed border-white/10 hover:border-blue-500/40 rounded-[40px] flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-blue-500/5 transition-all">
-                      <input type="file" accept=".mssync" onChange={handleImport} className="hidden" />
+                      <input 
+                        type="file" 
+                        accept=".mssync, .zip, application/zip, application/x-zip-compressed" 
+                        onChange={handleImport} 
+                        className="hidden" 
+                      />
                       <ArrowUpCircle className="w-16 h-16 text-blue-500/50 group-hover:text-blue-500 transition-colors" />
                       <p className="text-center">
                         <span className="block font-black text-[var(--text-main)] uppercase italic text-lg tracking-tighter">Click para buscar</span>
@@ -185,9 +219,9 @@ export const SyncCenterView: React.FC = () => {
                 )}
 
                 {isProcessing && (
-                  <div className="w-full max-w-md bg-black/30 p-8 rounded-3xl border border-white/5 text-center">
+                  <div className="w-full max-w-md bg-black/30 p-8 rounded-3xl border border-white/5 text-center mx-auto">
                     <RefreshCw className="w-10 h-10 text-blue-500 animate-spin mx-auto mb-6" />
-                    <p className="font-black text-[var(--text-main)] uppercase italic text-sm mb-4 tracking-widest">{progress.message}</p>
+                    <p className="font-black text-[var(--text-main)] text-center uppercase italic text-sm mb-4 tracking-widest">{progress.message}</p>
                     <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden mb-3">
                       <div className="bg-blue-500 h-full transition-all duration-300" style={{ width: `${progress.current}%` }} />
                     </div>
@@ -195,11 +229,11 @@ export const SyncCenterView: React.FC = () => {
                 )}
 
                 {isSuccess && importSummary && (
-                  <div className="text-center animate-in fade-in zoom-in-95">
+                  <div className="text-center animate-in fade-in zoom-in-95 w-full">
                     <div className="w-24 h-24 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                       <History className="w-12 h-12 text-blue-500" />
                     </div>
-                    <h3 className="text-3xl font-black text-[var(--text-main)] uppercase italic mb-2 tracking-tighter">¡Sincronización Exitosa!</h3>
+                    <h3 className="text-3xl font-black text-center text-[var(--text-main)] uppercase italic mb-2 tracking-tighter">¡Sincronización Exitosa!</h3>
                     <div className="flex justify-center gap-6 mt-6 mb-8">
                        <div className="text-center">
                          <p className="text-2xl font-black text-emerald-400">{importSummary.imported}</p>
@@ -214,7 +248,7 @@ export const SyncCenterView: React.FC = () => {
                          <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">Omitidas</p>
                        </div>
                     </div>
-                    <button onClick={() => window.location.reload()} className="bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all">Ver mi Biblioteca</button>
+                    <button onClick={() => window.location.reload()} className="bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all mx-auto block">Ver mi Biblioteca</button>
                   </div>
                 )}
               </div>
@@ -230,8 +264,8 @@ export const SyncCenterView: React.FC = () => {
                    <AlertCircle className="w-8 h-8 text-orange-500" />
                 </div>
                 <div className="space-y-2">
-                   <h3 className="text-2xl font-black text-[var(--text-main)] uppercase italic tracking-tighter">Canción Duplicada</h3>
-                   <p className="text-sm font-bold text-[var(--text-muted)] italic leading-relaxed">
+                   <h3 className="text-2xl font-black text-center text-[var(--text-main)] uppercase italic tracking-tighter">Canción Duplicada</h3>
+                   <p className="text-sm font-bold text-[var(--text-muted)] text-center italic leading-relaxed mx-auto">
                      La canción <span className="text-[var(--text-main)]">"{conflict.track.title}"</span> ya se encuentra en tu biblioteca. <br/>¿Qué deseas hacer?
                    </p>
                 </div>
