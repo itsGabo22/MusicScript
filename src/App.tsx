@@ -206,6 +206,10 @@ function App() {
 
   useEffect(() => {
     if (isLyricsOpen && activeSong) {
+      // IMMEDIATE RESET: Prevent stale lyrics from appearing or being translated
+      setActiveLyrics(null);
+      setIsLyricsLoading(true);
+
       const timer = setTimeout(() => {
         handleFetchLyrics(activeSong.id);
       }, 300);
