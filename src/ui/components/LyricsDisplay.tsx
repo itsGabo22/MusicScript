@@ -62,7 +62,7 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
     let index = -1;
     // Add a small anticipatory offset (0.3s) for a snappier feel
     const adjustedTime = currentTime + 0.3;
-    
+
     for (let i = 0; i < parsedLyrics.length; i++) {
       if (adjustedTime >= parsedLyrics[i].time) {
         index = i;
@@ -141,8 +141,8 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
           onWheel={handleScrollInteraction}
           onTouchStart={handleScrollInteraction}
           className="h-full w-full overflow-y-auto pr-2 lyrics-scroll relative pb-96 pt-32 scroll-smooth"
-          style={{ 
-            willChange: 'scroll-position', 
+          style={{
+            willChange: 'scroll-position',
             position: 'relative',
             maskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)',
             WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)'
@@ -162,8 +162,8 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
                     key={idx}
                     data-active={isActive ? "true" : "false"}
                     onClick={() => {
-                       onSeek(Math.max(0, line.time - 0.1));
-                       setIsAutoScrolling(true);
+                      onSeek(Math.max(0, line.time - 0.1));
+                      setIsAutoScrolling(true);
                     }}
                     animate={{
                       opacity: isActive ? 1 : 0.3,
@@ -171,9 +171,8 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
                       filter: isActive ? 'blur(0px)' : 'blur(0.4px)'
                     }}
                     transition={{ duration: 0.5 }}
-                    className={`cursor-pointer transition-all text-center font-black text-xl md:text-3xl lg:text-4xl leading-snug w-full tracking-tight ${
-                      isActive ? 'text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'text-white/60'
-                    }`}
+                    className={`cursor-pointer transition-all text-center font-black text-xl md:text-3xl lg:text-4xl leading-snug w-full tracking-tight ${isActive ? 'text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'text-white/60'
+                      }`}
                   >
                     {line.text}
                   </motion.p>
@@ -181,15 +180,15 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
               })}
             </div>
           ) : (
-             <div className="py-20 text-center text-white/10 uppercase font-black text-sm tracking-widest">
-                {lyrics?.plain ? lyrics.plain : "Sin letras"}
-             </div>
+            <div className="py-20 text-center text-white/10 uppercase font-black text-sm tracking-widest">
+              {lyrics?.plain ? lyrics.plain : "Sin letras"}
+            </div>
           )}
         </div>
       </div>
 
       {!isAutoScrolling && (
-        <button 
+        <button
           onClick={() => setIsAutoScrolling(true)}
           className="absolute bottom-12 right-12 bg-emerald-600 text-white px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl z-40 animate-pulse border border-emerald-400/20 active:scale-95"
         >
@@ -199,7 +198,7 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
 
       <div className="mt-4 pt-4 border-t border-white/5 text-center flex flex-col gap-1 items-center">
         <p className="text-[8px] font-black text-white/20 uppercase tracking-widest italic">MUSICSCRIPT LYRICS SYSTEM v3.0</p>
-        <p className="text-[7px] font-bold text-emerald-500/30 uppercase tracking-[0.2em]">Powered by Genius & LRCLIB</p>
+        <p className="text-[7px] font-bold text-emerald-500/30 uppercase tracking-[0.2em]">Powered by LYRICS.OVH & LRCLIB</p>
       </div>
     </motion.div>
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Download, FileAudio, Info } from 'lucide-react';
+import { ExternalLink, Download, FileAudio, Info, Scissors, SlidersHorizontal, Bot } from 'lucide-react';
 import MusicScriptLogo from '../components/MusicScriptLogo';
 
 const GuideView: React.FC = () => {
@@ -78,6 +78,60 @@ const GuideView: React.FC = () => {
               <span>Ir a SpotiDown</span>
               <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </a>
+          </GuideCard>
+
+        </div>
+
+        {/* PRO FEATURES SECTION */}
+        <div className="mt-16 text-center space-y-4">
+          <h2 className="text-2xl md:text-4xl font-black text-[var(--text-main)] italic tracking-tighter uppercase mb-8">Herramientas PRO</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          
+          {/* Audio Trimmer */}
+          <GuideCard 
+            step="Pro"
+            title="Cortador de Audio"
+            icon={<Scissors className="w-7 h-7 text-blue-400" />}
+            color="border-blue-500/20 hover:border-blue-500/50"
+          >
+            <p className="text-sm text-[var(--text-muted)] font-bold mb-6">Recorta canciones sin perder calidad y expórtalas a MP3 nativamente.</p>
+            <ul className="space-y-4">
+              <StepItem num="1" text="Haz clic en el engranaje ⚙️ de cualquier canción en tu librería." />
+              <StepItem num="2" text="Mueve los cursores para elegir tu fragmento favorito." />
+              <StepItem num="3" text="Guárdala como copia o Reemplaza la original." />
+            </ul>
+          </GuideCard>
+
+          {/* Equalizer */}
+          <GuideCard 
+            step="Pro"
+            title="Ecualizador 5-Bandas"
+            icon={<SlidersHorizontal className="w-7 h-7 text-indigo-400" />}
+            color="border-indigo-500/20 hover:border-indigo-500/50"
+          >
+            <p className="text-sm text-[var(--text-muted)] font-bold mb-6">Refina tu experiencia acústica con presets en tiempo real.</p>
+            <ul className="space-y-4">
+              <StepItem num="1" text="Actívalo desde la barra de reproducción (abajo a la derecha)." />
+              <StepItem num="2" text="Dibuja tu propia curva en los 'Sliders' verticales." />
+              <StepItem num="3" text="O utiliza los botones inferiores para aplicar Presets como 'Rock' o 'Bass Boost'." />
+            </ul>
+          </GuideCard>
+
+          {/* AIAssistant */}
+          <GuideCard 
+            step="Pro"
+            title="Cerebro Inteligente (IA)"
+            icon={<Bot className="w-7 h-7 text-purple-400" />}
+            color="border-purple-500/20 hover:border-purple-500/50"
+          >
+            <p className="text-sm text-[var(--text-muted)] font-bold mb-6">Un bot impulsado por Gemini que conoce tu librería.</p>
+            <ul className="space-y-4">
+              <StepItem num="1" text="Ingresa al ícono del Cerebro en el menú lateral." />
+              <StepItem num="2" text="Pídele recomendaciones basadas en tu humor actual." />
+              <StepItem num="3" text="Personaliza su Nombre y Comportamiento desde la Configuración de la IA." />
+            </ul>
           </GuideCard>
 
         </div>

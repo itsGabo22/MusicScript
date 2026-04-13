@@ -11,6 +11,7 @@ import AppShell from './ui/components/AppShell';
 import PlayerBar from './ui/components/PlayerBar';
 import CreatePlaylistModal from './ui/components/CreatePlaylistModal';
 import PlaylistPicker from './ui/components/PlaylistPicker';
+import { OnboardingModal } from './ui/components/OnboardingModal';
 import GuideView from './ui/views/GuideView';
 import AIAssistant from './ui/views/AIAssistant';
 import { LyricsService } from './infrastructure/services/LyricsService';
@@ -31,6 +32,7 @@ function App() {
   const [pickingForTrackId, setPickingForTrackId] = useState<string | null>(null);
   const [editingTrack, setEditingTrack] = useState<Song | null>(null);
   const [trimmingTrack, setTrimmingTrack] = useState<Song | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(!localStorage.getItem('ms_tutorial_seen'));
   
   // Lyrics State
   const [activeLyrics, setActiveLyrics] = useState<{ plain: string | null; synced: string | null } | null>(null);
@@ -326,6 +328,15 @@ function App() {
             setPickingForTrackId(null);
           }
         }}
+      />
+      
+      {/* FIRST-TIME USER ONBOARDING MODAL */}
+      <OnboardingModal 
+        isOpen={showOnboarding} 
+        onClose={() => {
+          localStorage.setItem('ms_tutorial_seen', 'true');
+          setShowOnboarding(false);
+        }} 
       />
     </div>
   );
