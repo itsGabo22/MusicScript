@@ -90,14 +90,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 40 }}
           transition={{ type: "spring", damping: 30, stiffness: 300 }}
-          className="relative w-full max-w-xl bg-white/80 dark:bg-slate-900/80 border border-black/5 dark:border-white/10 rounded-[40px] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] flex flex-col backdrop-blur-3xl"
+          className="relative w-full max-w-xl bg-white/95 border border-black/10 rounded-[40px] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] flex flex-col md:backdrop-blur-3xl"
         >
           {/* Top Progress Bar */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 flex gap-1 px-4 pt-4 z-50">
+          <div className="absolute top-0 left-0 right-0 h-1.5 flex gap-1 px-6 pt-5 z-50">
             {slides.map((_, i) => (
               <div 
                 key={i} 
-                className="flex-1 h-full rounded-full overflow-hidden bg-black/5 dark:bg-white/10"
+                className="flex-1 h-full rounded-full overflow-hidden bg-slate-200 shadow-inner"
               >
                 <motion.div 
                   initial={false}
@@ -112,11 +112,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
           </div>
 
           {/* Dynamic Background Blob */}
-          <div className={`absolute -top-24 -left-24 w-64 h-64 bg-gradient-to-br ${slides[currentSlide].color} blur-[120px] rounded-full transition-colors duration-1000 opacity-60 animate-glow-pulse`} />
-          <div className={`absolute -bottom-24 -right-24 w-64 h-64 bg-gradient-to-br ${slides[currentSlide].color} blur-[120px] rounded-full transition-colors duration-1000 opacity-60 animate-glow-pulse`} style={{ animationDelay: '2s' }} />
+          <div className={`absolute -top-24 -left-24 w-64 h-64 bg-gradient-to-br ${slides[currentSlide].color} blur-[120px] rounded-full transition-colors duration-1000 opacity-40 animate-glow-pulse`} />
+          <div className={`absolute -bottom-24 -right-24 w-64 h-64 bg-gradient-to-br ${slides[currentSlide].color} blur-[120px] rounded-full transition-colors duration-1000 opacity-40 animate-glow-pulse`} style={{ animationDelay: '2s' }} />
 
           {/* Slide Content */}
-          <div className="relative p-10 md:p-14 pb-8 min-h-[420px] flex flex-col items-center text-center justify-center">
+          <div className="relative p-8 md:p-14 pb-6 md:pb-8 min-h-[420px] flex flex-col items-center text-center justify-center">
             
             <AnimatePresence mode="wait">
               <motion.div
@@ -128,9 +128,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                 className="flex flex-col items-center w-full"
               >
                 {/* Icon Container with Aura */}
-                <div className="relative mb-12 group">
-                   <div className={`absolute inset-0 blur-3xl opacity-30 ${slides[currentSlide].iconColor.replace('text-', 'bg-')} scale-150 animate-glow-pulse`} />
-                   <div className={`relative p-8 rounded-3xl bg-white/20 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-xl ${slides[currentSlide].iconColor} animate-float`}>
+                <div className="relative mb-10 md:mb-12 group">
+                   <div className={`absolute inset-0 blur-3xl opacity-20 ${slides[currentSlide].iconColor.replace('text-', 'bg-')} scale-150 animate-glow-pulse`} />
+                   <div className={`relative p-8 rounded-3xl bg-slate-50 border border-slate-200 shadow-xl ${slides[currentSlide].iconColor} animate-float`}>
                      {slides[currentSlide].icon}
                    </div>
                 </div>
@@ -139,7 +139,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="text-4xl md:text-5xl font-black italic tracking-tighter text-[var(--text-main)] mb-6 uppercase leading-tight"
+                  className="text-3xl md:text-5xl font-black italic tracking-tighter text-slate-900 mb-4 md:mb-6 uppercase leading-tight"
                 >
                   {slides[currentSlide].title}
                 </motion.h2>
@@ -148,7 +148,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="text-[var(--text-muted)] text-base md:text-xl leading-relaxed max-w-sm mx-auto font-bold opacity-90"
+                  className="text-slate-600 text-sm md:text-xl leading-relaxed max-w-sm mx-auto font-bold"
                 >
                   {slides[currentSlide].description}
                 </motion.p>
@@ -157,18 +157,18 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
           </div>
 
           {/* Footer Controls */}
-          <div className="relative p-8 px-10 bg-black/5 dark:bg-black/20 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
+          <div className="relative p-6 md:p-8 px-8 md:px-10 bg-slate-50 border-t border-slate-200 flex flex-row items-center justify-between gap-4">
             
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50 mb-1">Paso</span>
-              <span className="text-sm font-black text-[var(--text-main)] italic">{currentSlide + 1} de {slides.length}</span>
+            <div className="flex flex-col items-start min-w-[60px]">
+              <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Paso</span>
+              <span className="text-xs md:text-sm font-black text-slate-900 italic">{currentSlide + 1} de {slides.length}</span>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-2 md:gap-4 shrink-0">
               {currentSlide > 0 && (
                 <button
                   onClick={handlePrev}
-                  className="px-6 py-4 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-[var(--text-main)] transition-all active:scale-95 font-black tracking-widest text-[10px] uppercase border border-black/5 dark:border-white/5"
+                  className="px-4 md:px-6 py-3 md:py-4 rounded-xl md:2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all active:scale-95 font-black tracking-widest text-[9px] md:text-[10px] uppercase border border-slate-200"
                 >
                   Atrás
                 </button>
@@ -176,7 +176,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
 
               <button
                 onClick={handleNext}
-                className={`flex items-center gap-3 px-10 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all active:scale-95 font-black tracking-widest text-[10px] uppercase shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40`}
+                className="flex items-center gap-2 md:gap-3 px-6 md:px-10 py-3 md:py-4 rounded-xl md:2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all active:scale-95 font-black tracking-widest text-[9px] md:text-[10px] uppercase shadow-lg shadow-emerald-500/10"
                 style={{ 
                   background: currentSlide === slides.length - 1 ? '' : `linear-gradient(135deg, ${slides[currentSlide].iconColor === 'text-emerald-500' ? '#10b981' : '#3b82f6'}, #2563eb)`
                 }}
