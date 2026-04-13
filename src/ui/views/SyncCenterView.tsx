@@ -150,6 +150,13 @@ export const SyncCenterView: React.FC = () => {
     }
   };
 
+  const handleResetNetwork = () => {
+    syncService.disconnect();
+    setPerspective('idle');
+    setConnectionState('disconnected');
+    setDebugLogs(prev => [`[${new Date().toLocaleTimeString()}] ♻️ Sessión de red reiniciada manualmente.`, ...prev]);
+  };
+
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar animate-in fade-in duration-700">
       <div className="max-w-4xl mx-auto space-y-8 pb-32 md:pb-20">
@@ -391,8 +398,11 @@ export const SyncCenterView: React.FC = () => {
               className="mt-6 bg-black/60 border border-white/10 rounded-2xl p-4 font-mono text-[10px] max-h-60 overflow-y-auto custom-scrollbar shadow-inner"
             >
               <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
-                <span className="text-blue-400 font-black uppercase tracking-widest">WebRTC debug_console v1.0</span>
-                <button onClick={() => setDebugLogs([])} className="text-[9px] text-white/30 hover:text-white uppercase font-black">Limpiar</button>
+                <span className="text-blue-400 font-black uppercase tracking-widest">WebRTC debug_console v1.1</span>
+                <div className="flex gap-4">
+                  <button onClick={handleResetNetwork} className="text-[9px] text-orange-400 hover:text-orange-300 uppercase font-black">Forzar Reinicio</button>
+                  <button onClick={() => setDebugLogs([])} className="text-[9px] text-white/30 hover:text-white uppercase font-black">Limpiar</button>
+                </div>
               </div>
               <div className="space-y-1">
                 {debugLogs.length === 0 && <p className="text-white/20 italic">No hay logs registrados...</p>}
