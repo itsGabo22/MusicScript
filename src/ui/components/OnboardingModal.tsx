@@ -34,8 +34,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
         iconColor: "text-orange-500"
     },
     {
-      title: "Bóveda de Sincronización",
-      description: "Exporta tu biblioteca completa o playlists seleccionadas en archivos .mssync. ¡Compártelas por WhatsApp incluso en el móvil!",
+      title: "Respaldo y Migración",
+      description: "Exporta tu biblioteca completa en archivos .mssync. Ideal para mover tu música entre navegadores de PC o crear respaldos locales permanentes.",
       icon: <FileArchive className="w-16 h-16" />,
       color: "from-cyan-500/20 to-blue-500/10",
       iconColor: "text-blue-500"
@@ -49,7 +49,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
     },
     {
       title: "Cerebro Inteligente",
-      description: "Gemini 2.0 Flash analiza tus metadatos para recomendarte qué escuchar. Inteligencia pura a tu servicio.",
+      description: "Gemini 2.5 Flash analiza tus metadatos para recomendarte música y traduce letras al español en tiempo real.",
       icon: <Bot className="w-16 h-16" />,
       color: "from-purple-500/20 to-pink-500/10",
       iconColor: "text-purple-500"

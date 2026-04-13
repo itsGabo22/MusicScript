@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Smartphone, MonitorPlay, Download, Check, RefreshCw, FileArchive, ArrowUpCircle, AlertCircle, History } from 'lucide-react';
+import { MonitorPlay, Download, Check, RefreshCw, FileArchive, ArrowUpCircle, AlertCircle, History } from 'lucide-react';
 import { syncBridgeService } from '../../infrastructure/services/SyncBridgeService';
 import { usePlaylists } from '../../hooks/usePlaylists';
 import { useLibrary } from '../../hooks/useLibrary';
@@ -104,12 +104,12 @@ export const SyncCenterView: React.FC = () => {
                  className="absolute -top-1 w-3 h-3 bg-white rounded-full shadow-[0_0_10px_white]"
                />
              </div>
-             <Smartphone className="w-16 h-16 text-blue-500 opacity-80" />
+             <MonitorPlay className="w-16 h-16 text-blue-500 opacity-80" />
           </motion.div>
           <h1 className="text-3xl md:text-5xl font-black text-center text-[var(--text-main)] italic tracking-tighter uppercase">Sync Center</h1>
           <p className="text-[10px] md:text-xs font-black text-center text-[var(--text-muted)] uppercase tracking-[0.4em] italic leading-loose mx-auto">
-            Bóveda de Sincronización Universal <br className="md:hidden" />
-            <span className="text-emerald-400 opacity-80">(Música & Listas sin pérdida de calidad)</span>
+            Centro de Migración y Respaldo (PC) <br className="md:hidden" />
+            <span className="text-emerald-400 opacity-80">(Transfiere tu música entre navegadores o crea backups)</span>
           </p>
         </header>
 
@@ -128,7 +128,7 @@ export const SyncCenterView: React.FC = () => {
                  <ArrowUpCircle className="w-10 h-10 text-blue-500" />
                </div>
                <h3 className="text-2xl font-black text-[var(--text-main)] text-center uppercase tracking-tighter italic mb-4">Importar Bóveda</h3>
-               <p className="text-sm font-bold text-[var(--text-muted)] text-center leading-relaxed">Carga un archivo .mssync o un .zip de WhatsApp para reconstruir tu biblioteca.</p>
+               <p className="text-sm font-bold text-[var(--text-muted)] text-center leading-relaxed">Carga un archivo .mssync para restaurar o migrar tu biblioteca en este navegador.</p>
             </button>
           </div>
         )}
@@ -142,7 +142,7 @@ export const SyncCenterView: React.FC = () => {
             {perspective === 'host' && (
               <div className="flex flex-col items-center pt-8">
                 <h2 className="text-3xl font-black italic uppercase text-center text-[var(--text-main)] mb-2">Preparar Bóveda</h2>
-                <p className="text-[var(--text-muted)] font-bold text-center mb-10 max-w-md mx-auto">Selecciona qué contenido deseas incluir en el archivo portable.</p>
+                <p className="text-[var(--text-muted)] font-bold text-center mb-10 max-w-sm mx-auto">Exporta tu música para llevarla a otro navegador o guardarla como respaldo local.</p>
 
                 {!isProcessing && !isSuccess && (
                   <div className="w-full flex flex-col items-center space-y-8 animate-in fade-in slide-in-from-bottom-4">
@@ -200,7 +200,7 @@ export const SyncCenterView: React.FC = () => {
             {perspective === 'client' && (
               <div className="flex flex-col items-center pt-8">
                 <h2 className="text-3xl font-black italic uppercase text-center text-[var(--text-main)] mb-2">Importar Bóveda</h2>
-                <p className="text-[var(--text-muted)] font-bold text-center mb-12 max-w-sm mx-auto">Selecciona el archivo .mssync (o .zip) para añadir la música a tu biblioteca local.</p>
+                <p className="text-[var(--text-muted)] font-bold text-center mb-12 max-w-sm mx-auto">Selecciona el archivo .mssync para añadir la música a este navegador.</p>
 
                 {!isProcessing && !isSuccess && (
                    <label className="group w-full max-w-md h-64 border-2 border-dashed border-white/10 hover:border-blue-500/40 rounded-[40px] flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-blue-500/5 transition-all">

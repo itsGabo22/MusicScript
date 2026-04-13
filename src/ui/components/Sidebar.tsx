@@ -29,7 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onToggleTheme
 }) => {
   const ViewIcon = () => {
-    switch(viewMode) {
+    switch (viewMode) {
       case 'modern': return <LayoutGrid className="w-5 h-5" />;
       case 'ipod': return <Smartphone className="w-5 h-5" />;
       case 'cassette': return <Disc className="w-5 h-5" />;
@@ -84,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <p className="px-4 text-[10px] font-black uppercase text-blue-500 tracking-[0.2em] mb-3 opacity-60">Conexión</p>
           <NavItem
             icon={<Network className="w-5 h-5" />}
-            label="Sync P2P"
+            label="Sync Center"
             active={activeView === 'sync'}
             onClick={() => onViewChange('sync')}
           />
@@ -135,14 +135,14 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* FOOTER: Integrated Theme and Mode Controls for PC view */}
       <div className="mt-6 pt-6 border-t border-[var(--border-color)]">
         <div className="flex items-center gap-2 mb-6">
-          <button 
+          <button
             onClick={onToggleView}
             className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 rounded-2xl border border-emerald-500/20 transition-all active:scale-95 text-xs font-black uppercase tracking-widest"
           >
             <ViewIcon />
             <span className="hidden lg:inline">{viewMode}</span>
           </button>
-          <button 
+          <button
             onClick={onToggleTheme}
             className="p-3 bg-[var(--bg-card)] text-[var(--text-main)] hover:bg-[var(--border-color)] rounded-2xl border border-[var(--border-color)] transition-all active:scale-95"
           >
@@ -163,8 +163,8 @@ const NavItem = ({ icon, label, active, onClick }: { icon: any, label: string, a
   <button
     onClick={onClick}
     className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 font-bold text-sm ${active
-        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/10'
-        : 'text-[var(--text-muted)] hover:bg-emerald-500/10 hover:text-emerald-500'
+      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/10'
+      : 'text-[var(--text-muted)] hover:bg-emerald-500/10 hover:text-emerald-500'
       }`}
   >
     {icon}

@@ -112,13 +112,9 @@ La Fase 2 elevó a MusicScript de ser un reproductor básico a una aplicación d
    - Persistencia determinista en IndexedDB: el orden se mantiene exactamente igual tras recargar la página.
 2. **Motor de Letras Premium:**
    - **Sincronización Proactiva**: Algoritmo de scroll tipo "persecución" que mantiene la línea activa siempre en el centro vertical.
-   - **Estética de Vanguardia**: Uso de `mask-image` en CSS para degradados de transparencia suaves, eliminando cortes bruscos en el texto.
-   - **Multi-API Sync**: Integración con **LRCLIB** (Lyrics Real-time) y **Lyrics.ovh**.
-3. **Visualizador "Holograma":**
-   - Análisis de frecuencias de audio en tiempo real mediante `Web Audio API`.
-   - Renderizado dinámico de curvas SVG ("Holograma") que nacen y se fusionan con la barra de progreso.
-4. **Guía de Usuario Interactiva:**
-   - Sección instructiva integrada con enlaces directos a conversores seguros para poblar la biblioteca desde YouTube y Spotify.
+   - **Estética de Vanguardia**: Uso de `mask-image` en CSS para degradados de transparencia suaves.
+   - **Multi-API Sync**: Integración con **LRCLIB** y **Lyrics.ovh**.
+   - **Traducción Inteligente (Powered by Gemini)**: Traducción automática al español para canciones en cualquier idioma, integrada directamente en el visualizador.
 
 ---
 
@@ -128,30 +124,40 @@ La tercera entrega consagra a MusicScript no solo como un reproductor, sino como
 
 1. **Recorte de Audio y Codificación Nativa:**
    - **Editor No Lineal**: Recorta canciones con precisión milimétrica usando cursores visuales duales.
-   - **Compresión Nativa (lamejs) y WAV**: Transforma el flujo de bytes `Float32Array` directamente a `WAV` o los codifica en vuelo a `MP3` sin servidores intermedios, uniendo la Web Audio API con buffers de memoria puros.
-   - **Persistencia Estable**: Manejo de caché de memoria RAM profunda (`blobUrlCache`) para URLs generadas, garantizando transiciones limpias y cero cortes de audio.
+   - **Compresión Nativa (lamejs) y WAV**: Transforma el flujo de bytes `Float32Array` directamente a `WAV` o los codifica en vuelo a `MP3` sin servidores intermedios.
 2. **Ecualizador Profesional 5-Bandas (Patrón Decorator):**
    - Una cadena de nodos de filtros bi-quad envuelven dinámicamente el source original de audio.
-   - Soporte para *Presets* y persistencia de frecuencias cruzadas en la cadena maestro/esclavo del analizador de espectro de la interfaz.
-3. **Agente LLM Musical Integrado (Gemini 2.0 Flash):**
-   - **Cerebro Musical Conversacional**: Conexión ultra-rápida y directa mediante API REST al modelo más potente de Google para recomendaciones y análisis de datos de los metadatos de las canciones.
-   - **Contexto Categórico**: El agente sabe "qué tienes" en este momento y su recomendación se amolda dinámicamente al estado de tus colecciones locales IndexedDB. Permite inyección de *system prompts* customizables desde la UI.
+   - Soporte para *Presets* y persistencia de frecuencias.
+3. **Agente LLM Musical Integrado (Gemini 2.5 Flash):**
+   - **Cerebro Musical Conversacional**: Conexión ultra-rápida y directa mediante API REST al modelo más potente de Google para recomendaciones y análisis de datos.
+   - **Traductor de Letras en Vivo**: Motor de IA que procesa y traduce letras de canciones en tiempo real para el visualizador premium.
+   - **Contexto Categórico**: El agente sabe "qué tienes" en este momento y su recomendación se amolda dinámicamente al estado de tus colecciones locales IndexedDB.
 
 ---
 
 ## 🌐 Sync Center: Bóveda de Sincronización (.mssync) (Fase 4 - Finalizada)
 
-La cuarta fase transforma a MusicScript de una herramienta aislada a un ecosistema interconectado mediante un sistema de **Bóveda Universal**, garantizando la transferencia de bibliotecas incluso en redes restringidas:
+La cuarta fase transforma a MusicScript en un ecosistema portable mediante un sistema de **Bóveda Universal**, diseñado específicamente para la transferencia entre computadoras y el respaldo de datos:
 
 1. **Vault Sync Protocol (.mssync):**
-   - **Empaquetado de Alto Rendimiento**: Utiliza `JSZip` con algoritmos de compresión `DEFLATE` para serializar toda la base de datos (metadatos + archivos binarios de audio) en un único contenedor portable.
-   - **Independencia de Red**: Supera las limitaciones de WebRTC (NAT simétrica) permitiendo la transferencia vía archivos físicos, la nube o mensajería.
-   - **Gestión de Conflictos (Deduplicación)**: Durante la importación, el sistema aplica un algoritmo de chequeo de integridad que permite al usuario decidir entre **Omitir** o **Reemplazar** canciones duplicadas.
+   - **Enfoque PC-to-PC**: Optimizado para migrar tu biblioteca entre navegadores (ej. de Chrome a Firefox) o entre diferentes computadoras sin depender de una cuenta en la nube.
+   - **Respaldo Local**: Ideal para generar copias de seguridad antes de realizar limpiezas de datos de navegación o formatear el sistema, asegurando que tu música y listas sean persistentes.
+   - **Gestión de Conflictos (Deduplicación)**: Durante la importación, el sistema permite elegir entre **Omitir** o **Reemplazar** canciones duplicadas para mantener la integridad de la biblioteca.
 2. **Interfaz de Sincronización Premium:**
-   - **Rediseño Full-Responsive**: Interfaz optimizada para móviles con indicadores de progreso dinámicos y auras animadas.
-   - **Onboarding Inteligente**: Tour de bienvenida actualizado que guía al usuario en el proceso de exportación e importación de bóvedas.
-3. **Persistencia Híbrida Remota-Local:**
-   - Toda pista importada es procesada y guardada permanentemente en `IndexedDB`, manteniendo la independencia total del dispositivo original.
+   - **Operación Simple**: Genera un archivo `.mssync` que contiene metadatos y audio comprimido con `JSZip (DEFLATE)`.
+   - **Onboarding Informativo**: Guía paso a paso que explica el propósito de la sincronización local y la importancia de los respaldos físicos.
+3. **Independencia Total:**
+   - No requiere servidores externos ni conexión a Internet para funcionar una vez generado el archivo, manteniendo la premisa de privacidad total.
+
+---
+
+## 🚀 Futuro de MusicScript (Roadmap)
+
+Aunque MusicScript es actualmente una aplicación basada en almacenamiento local (`IndexedDB`), tenemos una visión para escalar el proyecto:
+
+*   **Autenticación y Perfiles**: Implementar un sistema de usuarios (Firebase/Supabase) para que la música te siga a cualquier dispositivo sin mover archivos.
+*   **Base de Datos Global**: Migrar a una arquitectura en la nube que permita la sincronización en tiempo real y la compartición comunitaria de playlists.
+*   **App Nativa / Móvil**: Evolucionar hacia un entorno multiplataforma donde la sincronización sea transparente y automática mediante una API centralizada.
 
 ---
 

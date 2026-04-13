@@ -42,5 +42,37 @@ export const LyricsService = {
     }
 
     return { plain: null, synced: null };
+  },
+  
+  async translateLyrics(lines: string[]): Promise<string[]> {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey || lines.length === 0) return lines.map(() => "");
+
+    // Prepare a structured prompt to get a line-by-line translation
+    const prompt = `Traduce las siguientes líneas de una canción al ESPAÑOL. 
+Mantén exactamente el mismo número de líneas y el orden. 
+IMPORTANTE: Devuelve únicamente las líneas traducidas, sin preámbulos, sin notas y sin números.
+Si una línea es instrumental o ruidos, déjala en blanco.
+
+Líneas a traducir:
+${lines.join('\n')}`;
+
+    try {
+      const response = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        {
+          contents: [{ parts: [{ text: prompt }] }]
+        }
+      );
+
+      const text = response.data.candidates[0].content.parts[0].text;
+      const translatedLines = text.split('\n').map((l: string) => l.trim());
+      
+      // Ensure we match the original length
+      return lines.map((_, i) => translatedLines[i] || "");
+    } catch (error) {
+      console.error('Translation failed:', error);
+      return lines.map(() => "");
+    }
   }
 };
