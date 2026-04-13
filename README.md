@@ -144,7 +144,7 @@ La tercera entrega consagra a MusicScript no solo como un reproductor, sino como
 La cuarta fase transforma a MusicScript de una herramienta aislada a un ecosistema interconectado sin depender de una nube centralizada, utilizando protocolos de red de vanguardia:
 
 1. **Sincronización WebRTC P2P (Peer-to-Peer):**
-   - **Transferencia Multi-Dispositivo**: Permite enviar Listas de Reproducción o la Biblioteca completa de una PC a un Celular (o entre PCs) de forma directa.
+   - **Transferencia Multi-Dispositivo**: Permite enviar Listas de Reproducción o la Biblioteca completa de una PC a un Celular (o entre PCs) de forma directa, idealmente bajo la misma red Wi-Fi para máxima velocidad.
    - **Protocolo de Señalización PeerJS**: Establecimiento de túneles de datos seguros que permiten velocidades de red local (LAN) superiores para archivos pesados.
    - **Algoritmo de Transferencia Secuencial**: Fragmentación inteligente de Buffers de audio para garantizar una importación fluida en `IndexedDB` sin saturar la memoria RAM del receptor.
 2. **Emparejamiento por QR y Token:**

@@ -141,7 +141,7 @@ const GuideView: React.FC = () => {
             icon={<Network className="w-7 h-7 text-blue-500" />}
             color="border-blue-500/20 hover:border-blue-500/50"
           >
-            <p className="text-sm text-[var(--text-muted)] font-bold mb-6">Transfiere tu música de PC a Móvil sin cables ni nubes.</p>
+            <p className="text-sm text-[var(--text-muted)] font-bold mb-6">Transfiere tu música de PC a Móvil sin cables ni nubes (Recomendado: misma red Wi-Fi).</p>
             <ul className="space-y-4">
               <StepItem num="1" text="Entra a 'Sync P2P' en tu PC y elige qué enviar (Playlist o Bóveda)." />
               <StepItem num="2" text="En tu celular, entra a la misma sección y escanea el código QR." />

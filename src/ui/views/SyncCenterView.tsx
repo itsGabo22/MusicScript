@@ -125,7 +125,10 @@ export const SyncCenterView: React.FC = () => {
              <Smartphone className="w-16 h-16 text-blue-500 opacity-80" />
           </motion.div>
           <h1 className="text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase">Sync Center</h1>
-          <p className="text-[10px] md:text-xs font-black text-[var(--text-muted)] uppercase tracking-[0.4em] italic">Red WebRTC de Transferencia P2P</p>
+          <p className="text-[10px] md:text-xs font-black text-[var(--text-muted)] uppercase tracking-[0.4em] italic leading-loose">
+            Red WebRTC de Transferencia P2P <br className="md:hidden" />
+            <span className="text-blue-400 opacity-80">(Recomendado: Misma red Wi-Fi)</span>
+          </p>
         </header>
 
         {perspective === 'idle' && (

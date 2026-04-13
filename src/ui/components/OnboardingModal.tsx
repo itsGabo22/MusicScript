@@ -32,7 +32,7 @@ const slides = [
   },
   {
     title: "Sincroniza tus Equipos",
-    description: "¡Fase 4 Activa! Transfiere tus canciones y playlists de tu PC a tu Celular sin cables mediante una red P2P segura. Escanea el QR y tus datos volarán entre dispositivos.",
+    description: "¡Fase 4 Activa! Transfiere tus canciones de PC a Celular sin cables mediante una red P2P segura. Conecta ambos a la misma red Wi-Fi para una transferencia ultrarrápida.",
     icon: <Network className="w-16 h-16" />,
     color: "from-blue-500/20 to-indigo-900/20",
     iconColor: "text-blue-400"
