@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { LyricsService } from '../../infrastructure/services/LyricsService';
 
 interface LyricLine {
   time: number;
@@ -30,6 +31,7 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  const [translatedLines, setTranslatedLines] = useState<string[]>([]);
   const lastUserInteraction = useRef<number>(0);
 
   // Parse LRC format: [mm:ss.xx] Lyrics line
@@ -56,6 +58,23 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
 
     return result;
   }, [lyrics]);
+
+  // AI Translation logical trigger
+  useEffect(() => {
+    const translate = async () => {
+      if (!parsedLyrics || parsedLyrics.length === 0) return;
+      
+      try {
+        const originalLines = parsedLyrics.map(l => l.text);
+        const results = await LyricsService.translateLyrics(originalLines);
+        setTranslatedLines(results);
+      } catch (error) {
+        console.error("Error translation effect:", error);
+      }
+    };
+
+    translate();
+  }, [parsedLyrics]);
 
   const activeIndex = useMemo(() => {
     if (!parsedLyrics) return -1;
@@ -157,8 +176,10 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
             <div className="flex flex-col items-center gap-14 py-20 px-4">
               {parsedLyrics.map((line, idx) => {
                 const isActive = idx === activeIndex;
+                const hasTranslation = translatedLines[idx] && translatedLines[idx].trim() !== "";
+                
                 return (
-                  <motion.p
+                  <motion.div
                     key={idx}
                     data-active={isActive ? "true" : "false"}
                     onClick={() => {
@@ -171,11 +192,22 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
                       filter: isActive ? 'blur(0px)' : 'blur(0.4px)'
                     }}
                     transition={{ duration: 0.5 }}
-                    className={`cursor-pointer transition-all text-center font-black text-xl md:text-3xl lg:text-4xl leading-snug w-full tracking-tight ${isActive ? 'text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'text-white/60'
-                      }`}
+                    className={`cursor-pointer transition-all text-center w-full px-4`}
                   >
-                    {line.text}
-                  </motion.p>
+                    <p className={`font-black text-xl md:text-3xl lg:text-4xl leading-snug tracking-tight ${isActive ? 'text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'text-white/60'
+                      }`}>
+                      {line.text}
+                    </p>
+                    {hasTranslation && (
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={`text-[0.5em] md:text-[0.45em] font-bold italic mt-2 uppercase tracking-widest ${isActive ? 'text-white/60' : 'text-white/30'}`}
+                      >
+                        {translatedLines[idx]}
+                      </motion.p>
+                    )}
+                  </motion.div>
                 );
               })}
             </div>

@@ -156,24 +156,23 @@ const GuideView: React.FC = () => {
             <p className="text-sm text-[var(--text-muted)] font-bold mb-6">Un bot impulsado por Gemini que conoce tu librería.</p>
             <ul className="space-y-4">
               <StepItem num="1" text="Ingresa al ícono del Cerebro en el menú lateral." />
-              <StepItem num="2" text="Pídele recomendaciones basadas en tu humor actual." />
-              <StepItem num="3" text="Personaliza su Nombre y Comportamiento desde la Configuración de la IA." />
+              <StepItem num="2" text="Pídele recomendaciones o deja que traduzca tus letras automáticamente." />
+              <StepItem num="3" text="Configura su motor Gemini 2.5 Flash desde los ajustes de la IA." />
             </ul>
           </GuideCard>
 
-          {/* Sync Center */}
           <GuideCard
             step="Pro"
-            title="Sincronización de bóvedas"
+            title="Respaldo y Migración"
             icon={<Network className="w-7 h-7 text-blue-500" />}
             color="border-blue-500/20 hover:border-blue-500/50"
           >
-            <p className="text-sm text-[var(--text-muted)] font-bold mb-6">Transfiere tu música entre navegadores sin nubes, o a otros PCs.</p>
+            <p className="text-sm text-[var(--text-muted)] font-bold mb-6">Mueve tu música entre navegadores de PC o crea copias de seguridad locales.</p>
             <ul className="space-y-4">
-              <StepItem num="1" text="Entra a 'Sync Center' en tu dispositivo y elige qué enviar (Playlist o Bóveda)." />
-              <StepItem num="2" text="Si quieres tranferir a móvil entonces manda el archivo que generaste por whatsapp o telegram de tu PC a tu móvil." />
-              <StepItem num="3" text="En el otro dispositivo (PC o móvil), entra a la misma sección y carga el archivo .myssync o .zip (en móviles)" />
-              <StepItem num="4" text="¡Listo! Los archivos volarán directo a la memoria de tu dispositivo." />
+              <StepItem num="1" text="Entra a 'Sync Center' y genera tu archivo de bóveda (.mssync)." />
+              <StepItem num="2" text="Guarda este archivo en una memoria USB o disco duro como respaldo." />
+              <StepItem num="3" text="En el nuevo navegador o PC, entra a la misma sección y carga el archivo." />
+              <StepItem num="4" text="¡Listo! Tu biblioteca se reconstruirá idénticamente en el nuevo entorno." />
             </ul>
           </GuideCard>
 
