@@ -28,6 +28,10 @@ export class SyncService {
       this.peer.on('connection', (conn) => {
         this.connection = conn;
         // Don't set to connected until Handshake is received
+        // Listen to when the host side of the channel is open
+        conn.on('open', () => {
+           console.log("Host side data channel opened.");
+        });
         this.setupConnectionListeners(conn, true);
       });
 
@@ -47,11 +51,28 @@ export class SyncService {
         const conn = this.peer!.connect(hostId, { reliable: true });
         
         conn.on('open', () => {
+          console.log("Client data channel explicitly open");
           this.connection = conn;
           this.setupConnectionListeners(conn, false, resolve);
-          // Send handshake
+          
+          // Send handshake with slight delay to ensure WebRTC channel is truly flushed
           console.log("Sending Handshake to Host...");
-          conn.send({ type: 'HANDSHAKE' });
+          let attempts = 0;
+          const handshakeInterval = setInterval(() => {
+            if (this.connection && this.connection.open) {
+              this.connection.send({ type: 'HANDSHAKE' });
+              attempts++;
+              if (attempts > 5) clearInterval(handshakeInterval); // stop trying after 5 times
+            } else {
+              clearInterval(handshakeInterval);
+            }
+          }, 500);
+
+          // Listen for our own custom event to clear interval if we succeed sooner
+          conn.on('data', (d: any) => {
+            if (d && d.type === 'HANDSHAKE_ACK') clearInterval(handshakeInterval);
+          });
+
         });
 
         conn.on('error', (err) => {
