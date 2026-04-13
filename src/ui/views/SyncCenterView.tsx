@@ -109,7 +109,7 @@ export const SyncCenterView: React.FC = () => {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar animate-in fade-in duration-700">
-      <div className="max-w-4xl mx-auto space-y-8 pb-20">
+      <div className="max-w-4xl mx-auto space-y-8 pb-32 md:pb-20">
         
         {/* HEADER */}
         <header className="text-center space-y-4">
@@ -268,20 +268,20 @@ export const SyncCenterView: React.FC = () => {
                     
                     <div id="reader" className="w-full max-w-sm mb-6 rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-black/40" />
 
-                    <div className="flex gap-2 w-full max-w-sm relative z-20">
+                    <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm relative z-20">
                       <input 
                         type="text" 
                         value={clientPinInput}
                         onChange={(e) => setClientPinInput(e.target.value.toUpperCase())}
-                        placeholder="EJ: 8X91A"
-                        className="flex-1 bg-black/40 border border-white/10 text-white rounded-xl px-4 font-mono text-xl tracking-[0.2em] focus:outline-none focus:border-blue-500 transition-colors uppercase"
+                        placeholder="CÓDIGO PIN"
+                        className="flex-1 bg-black/40 border border-white/10 text-white rounded-2xl py-4 px-6 font-mono text-2xl text-center tracking-[0.3em] focus:outline-none focus:border-blue-500 transition-colors uppercase h-16 w-full"
                       />
                       <button 
                         onClick={() => startClientConnect(clientPinInput)}
-                        disabled={!clientPinInput}
-                        className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-6 font-black uppercase tracking-widest rounded-xl transition-all"
+                        disabled={!clientPinInput || clientPinInput.length < 4}
+                        className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-8 h-16 sm:h-auto font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl hover:shadow-blue-500/20"
                       >
-                        Conectar
+                        Conectar ahora
                       </button>
                     </div>
                   </>
