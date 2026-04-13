@@ -72,10 +72,10 @@ export const SyncCenterView: React.FC = () => {
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => {
-          stopCamera().then(() => {
-            setClientPinInput(decodedText);
-            startClientConnect(decodedText);
-          });
+          // Immediately start connection process, independently of camera stopping gracefully
+          setClientPinInput(decodedText);
+          startClientConnect(decodedText);
+          stopCamera();
         },
         () => {
           // ignore scan errors
