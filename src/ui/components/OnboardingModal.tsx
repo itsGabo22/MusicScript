@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Bot, SlidersHorizontal, Scissors, LayoutDashboard, Check, FileAudio, Network } from 'lucide-react';
+import { ChevronRight, Bot, SlidersHorizontal, Scissors, LayoutDashboard, Check, FileAudio, FileArchive } from 'lucide-react';
 import MusicScriptLogo from './MusicScriptLogo';
 
 interface OnboardingModalProps {
@@ -31,9 +31,9 @@ const slides = [
     iconColor: "text-indigo-400"
   },
   {
-    title: "Sincroniza tus Equipos",
-    description: "Transfiere tus canciones de PC a Celular sin cables mediante una red P2P segura. Conecta ambos a la misma red Wi-Fi para una transferencia ultrarrápida.",
-    icon: <Network className="w-16 h-16" />,
+    title: "Bóveda de Sincronización",
+    description: "Exporta toda tu música en un archivo .mssync para llevarla a otros dispositivos. ¡Es universal, no requiere Wi-Fi y mantiene toda la calidad original!",
+    icon: <FileArchive className="w-16 h-16" />,
     color: "from-blue-500/20 to-indigo-900/20",
     iconColor: "text-blue-400"
   },
