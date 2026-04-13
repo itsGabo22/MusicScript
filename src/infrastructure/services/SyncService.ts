@@ -13,8 +13,11 @@ const WEBRTC_CONFIG = {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' }
-    ]
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' }
+    ],
+    iceTransportPolicy: 'all' as RTCIceTransportPolicy
   }
 };
 
@@ -47,6 +50,11 @@ export class SyncService {
         conn.on('open', () => {
            this.log(`WebRTC: Data channel with client is now formally OPEN on Host side.`);
         });
+        
+        conn.on('error', (err: any) => {
+          this.log(`DataChannel Error (Host): ${err.message || err.type || 'Unknown'}`);
+        });
+
         this.setupConnectionListeners(conn, true);
       });
 
@@ -66,9 +74,21 @@ export class SyncService {
       this.peer.on('open', (id) => {
         this.log(`Client LIVE with ID: ${id}. Requesting connection to ${hostId}...`);
         if (this.onConnectionStateChange) this.onConnectionStateChange('connecting');
-        const conn = this.peer!.connect(hostId, { reliable: true });
+        
+        // Using JSON serialization for better compatibility with mobile browsers
+        const conn = this.peer!.connect(hostId, { 
+          reliable: true,
+          serialization: 'json'
+        });
+
+        let connectionTimeout = setTimeout(() => {
+          if (!this.connection || !this.connection.open) {
+            this.log(`⚠️ TIMEOUT: La conexión está tardando demasiado. Esto suele ser un bloqueo de red/firewall en el router.`);
+          }
+        }, 15000);
         
         conn.on('open', () => {
+          clearTimeout(connectionTimeout);
           this.log(`WebRTC: Connection established with Host. Tunnel open.`);
           this.connection = conn;
           this.setupConnectionListeners(conn, false, resolve);
