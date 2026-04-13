@@ -211,7 +211,7 @@ function App() {
     await library.removeFromLibrary(id);
   };
 
-  const handleFetchLyrics = async (songId: string) => {
+  const handleFetchLyrics = async (songId: string, openView: boolean = false) => {
     const song = library.librarySongs.find(s => s.id === songId);
     if (!song) return;
 
@@ -219,7 +219,10 @@ function App() {
        player.selectTrack(songId);
     }
     
-    setIsLyricsOpen(true);
+    if (openView) {
+      setIsLyricsOpen(true);
+    }
+    
     setIsLyricsLoading(true);
     
     try {
@@ -235,20 +238,15 @@ function App() {
 
   useEffect(() => {
     if (activeSong) {
-      // UX IMPROVEMENT: Close lyrics automatically on track change
-      // This forces the user to see the new coverArt and prevents stale translation state
-      if (isLyricsOpen) {
-        setIsLyricsOpen(false);
-      }
+      // UX FIXED: Close lyrics automatically on track change
+      // Force return to default info (cover) mode
+      setIsLyricsOpen(false);
       
-      // Reset lyrics state for next time
+      // Reset lyrics state but DON'T open the view automatically
       setActiveLyrics(null);
-      setIsLyricsLoading(true);
-
-      const timer = setTimeout(() => {
-        handleFetchLyrics(activeSong.id);
-      }, 300);
-      return () => clearTimeout(timer);
+      
+      // Silent fetch for the next time the user wants to see them
+      handleFetchLyrics(activeSong.id, false);
     }
   }, [activeSong?.id]);
 
@@ -284,7 +282,7 @@ function App() {
                 onTrimTrack={(song) => setTrimmingTrack(song)}
                 activeView={activeView}
                 isLyricsOpen={isLyricsOpen}
-                onFetchLyrics={handleFetchLyrics}
+                onFetchLyrics={(id) => handleFetchLyrics(id, true)}
                 activeLyrics={activeLyrics}
                 isLyricsLoading={isLyricsLoading}
                 onCloseLyrics={() => setIsLyricsOpen(false)}
