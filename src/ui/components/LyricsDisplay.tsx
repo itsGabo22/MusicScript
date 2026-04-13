@@ -16,6 +16,7 @@ interface LyricsDisplayProps {
   artist: string;
   currentTime: number;
   onSeek: (time: number) => void;
+  showTranslation?: boolean;
   coverUrl?: string;
 }
 
@@ -27,12 +28,20 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
   artist,
   currentTime,
   onSeek,
+  showTranslation,
   coverUrl
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [translatedLines, setTranslatedLines] = useState<string[]>([]);
   const lastUserInteraction = useRef<number>(0);
+  const isTranslating = useRef(false);
+
+  // RESET state when song changes
+  useEffect(() => {
+    setTranslatedLines([]);
+    isTranslating.current = false;
+  }, [title, artist]);
 
   // Parse LRC format: [mm:ss.xx] Lyrics line
   const parsedLyrics = useMemo(() => {
@@ -59,22 +68,26 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
     return result;
   }, [lyrics]);
 
-  // AI Translation logical trigger
+  // AI Translation logical trigger - ON DEMAND
   useEffect(() => {
     const translate = async () => {
-      if (!parsedLyrics || parsedLyrics.length === 0) return;
+      if (!parsedLyrics || parsedLyrics.length === 0 || !showTranslation) return;
+      if (translatedLines.length > 0 || isTranslating.current) return;
       
+      isTranslating.current = true;
       try {
         const originalLines = parsedLyrics.map(l => l.text);
         const results = await LyricsService.translateLyrics(originalLines);
         setTranslatedLines(results);
       } catch (error) {
         console.error("Error translation effect:", error);
+      } finally {
+        isTranslating.current = false;
       }
     };
 
     translate();
-  }, [parsedLyrics]);
+  }, [parsedLyrics, showTranslation]);
 
   const activeIndex = useMemo(() => {
     if (!parsedLyrics) return -1;
@@ -198,7 +211,7 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
                       }`}>
                       {line.text}
                     </p>
-                    {hasTranslation && (
+                    {showTranslation && hasTranslation && (
                       <motion.p 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
