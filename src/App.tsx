@@ -115,6 +115,18 @@ function App() {
             player.next();
           }
           break;
+        case 'ArrowUp':
+          if (ctrl) {
+            e.preventDefault();
+            player.updateVolume(Math.min(1, player.volume + 0.1));
+          }
+          break;
+        case 'ArrowDown':
+          if (ctrl) {
+            e.preventDefault();
+            player.updateVolume(Math.max(0, player.volume - 0.1));
+          }
+          break;
         case 'Escape':
           if (isLyricsOpen) setIsLyricsOpen(false);
           break;
