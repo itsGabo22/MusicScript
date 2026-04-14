@@ -101,16 +101,21 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
     const center = 100; // Vertical center for 200h viewBox
     const points = visualData.map((val, i) => {
       const x = (i / (visualData.length - 1)) * width;
-      const y = center - (val * 110); 
+      // DE-EMPHASIZE CENTER & CAP HEIGHT for Mobile Safety (max 85)
+      const distFromCenter = Math.abs(i - (visualData.length - 1) / 2) / ((visualData.length - 1) / 2);
+      const sensitivityScale = 0.75 + (distFromCenter * 0.25); 
+      const y = center - (val * 85 * sensitivityScale); 
       return { x, y };
     });
     
     // Legacy topPoints for backward compatibility if needed, but we use 'points' now
     const topPoints = points;
-    const botPoints = visualData.map((val, i) => ({
-      x: (i / (visualData.length - 1)) * width,
-      y: center + (val * 110)
-    }));
+    const botPoints = visualData.map((val, i) => {
+      const x = (i / (visualData.length - 1)) * width;
+      const distFromCenter = Math.abs(i - (visualData.length - 1) / 2) / ((visualData.length - 1) / 2);
+      const sensitivityScale = 0.75 + (distFromCenter * 0.25);
+      return { x, y: center + (val * 85 * sensitivityScale) };
+    });
 
     const buildPath = (pts: {x: number, y: number}[]) => {
       if (pts.length === 0) return "";
@@ -139,16 +144,17 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <motion.div 
           animate={{ 
-            background: isPlaying ? [
-              `radial-gradient(circle at 15% 50%, hsla(${140 + intensities.avg * 100}, 100%, 50%, ${0.2 + intensities.avg * 0.4}), transparent 90%)`,
-              `radial-gradient(circle at 50% 50%, hsla(${180 + intensities.mid * 90}, 100%, 50%, ${0.2 + intensities.mid * 0.4}), transparent 90%)`,
-              `radial-gradient(circle at 85% 50%, hsla(${220 + (intensities.bass || intensities.high) * 80}, 100%, 50%, ${0.2 + (intensities.bass || intensities.high) * 0.4}), transparent 90%)`,
-            ] : `radial-gradient(circle at 50% 50%, rgba(128, 128, 128, 0.1), transparent 90%)`,
-            opacity: isPlaying ? [0.6, 0.9, 0.6] : 0.08,
-            scale: isPlaying ? [1, 1.25, 1] : 1
+            // 100% INSTANTANEOUS REACTIVITY (No more loops)
+            background: isPlaying ? 
+              `radial-gradient(circle at 15% 50%, hsla(${140 + intensities.avg * 120}, 100%, 50%, ${0.1 + intensities.avg * 0.75}), transparent 85%),
+               radial-gradient(circle at 50% 50%, hsla(${180 + intensities.mid * 110}, 100%, 50%, ${0.1 + intensities.mid * 0.75}), transparent 85%),
+               radial-gradient(circle at 85% 50%, hsla(${220 + intensities.bass * 110}, 100%, 50%, ${0.1 + intensities.bass * 0.75}), transparent 85%)` 
+              : `radial-gradient(circle at 50% 50%, rgba(128, 128, 128, 0.05), transparent 90%)`,
+            opacity: isPlaying ? 0.3 + intensities.avg * 0.7 : 0.05,
+            scale: isPlaying ? 1 + intensities.avg * 0.45 : 1
           }}
-          transition={{ duration: isPlaying ? 1.5 : 5, repeat: Infinity, ease: "easeInOut" }}
-          className={`absolute inset-0 ${isPlaying ? 'saturate-[2.5] brightness-125' : 'saturate-0'} transition-all duration-1000 bg-black/5`}
+          transition={{ duration: 0.1, ease: "linear" }}
+          className={`absolute inset-0 ${isPlaying ? 'saturate-[3.5] brightness-125' : 'saturate-0'} transition-all duration-1000 bg-black/5`}
         />
         <motion.div 
           animate={{ 
