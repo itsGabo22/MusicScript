@@ -108,7 +108,7 @@ export class AudioEditorService {
       }
     }
 
-    return new Blob([view], { type: 'audio/wav' });
+    return new Blob([bufferArray], { type: 'audio/wav' });
   }
 
   /**
@@ -138,9 +138,7 @@ export class AudioEditorService {
     // MP3 standard is 44100
     const targetBuffer = await this.resampleBuffer(buffer, 44100);
     
-    const channels = targetBuffer.numberOfChannels;
-    const sampleRate = targetBuffer.sampleRate;
-    const kbps = 128;
+    // Constants used for encoding configuration
     
     // lamejs fix: Exhaustive shim of internal classes needed for the encoding process
     if (typeof window !== 'undefined') {
@@ -177,52 +175,54 @@ export class AudioEditorService {
     }
 
     // @ts-ignore
-    const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps);
-    const mp3Data: any[] = []; // Changed to any[] for robustness
+    const mp3Data: Uint8Array[] = []; 
+    
+    // Using original lamejs return which is Int8Array (signed) but we cast to Uint8Array (unsigned)
+    // to ensure the Blob engine treats the bytes as raw data correctly.
 
     const left = targetBuffer.getChannelData(0);
-    const right = channels > 1 ? targetBuffer.getChannelData(1) : left;
+    const right = targetBuffer.numberOfChannels > 1 ? targetBuffer.getChannelData(1) : left;
 
     const sampleBlockSize = 1152;
     
-    // convert float32 to int16 with better clamping
+    // High-precision PCM conversion
     const leftInt16 = new Int16Array(left.length);
     const rightInt16 = new Int16Array(right.length);
-    
     for (let i = 0; i < left.length; i++) {
-        let l = Math.max(-1, Math.min(1, left[i]));
+        // DOUBLE CLAMPING: Essential to prevent 0xC00D36C4 errors on Windows
+        const l = Math.max(-1, Math.min(1, left[i]));
+        const r = Math.max(-1, Math.min(1, right[i]));
         leftInt16[i] = l < 0 ? l * 0x8000 : l * 0x7FFF;
-        
-        let r = Math.max(-1, Math.min(1, right[i]));
         rightInt16[i] = r < 0 ? r * 0x8000 : r * 0x7FFF;
     }
 
-    // CHUNKED ASYNC ENCODING: Avoid hanging the UI
+    // @ts-ignore
+    const mp3encoder = new lamejs.Mp3Encoder(targetBuffer.numberOfChannels, 44100, 128);
+
     for (let i = 0; i < leftInt16.length; i += sampleBlockSize) {
       const leftChunk = leftInt16.subarray(i, i + sampleBlockSize);
       const rightChunk = rightInt16.subarray(i, i + sampleBlockSize);
       
-      const mp3buf = channels > 1 ? 
+      const mp3buf = targetBuffer.numberOfChannels > 1 ? 
           mp3encoder.encodeBuffer(leftChunk, rightChunk) : 
           mp3encoder.encodeBuffer(leftChunk);
           
       if (mp3buf && mp3buf.length > 0) {
-        // Use the original Int8Array from lamejs directly for byte-integrity
-        mp3Data.push(mp3buf);
+        // ABSOLUTE ISOLATION: Use .slice() to create a deep copy of the raw bytes
+        // This prevents the Blob from pointing to the encoder's reused internal buffer
+        mp3Data.push(new Uint8Array(mp3buf).slice(0));
       }
 
-      // Yield every ~115,000 samples to keep UI alive
-      if (i % (sampleBlockSize * 100) === 0) {
-        await new Promise(resolve => setTimeout(resolve, 0));
+      if (i % (sampleBlockSize * 150) === 0) {
+        await new Promise(r => setTimeout(r, 0));
       }
     }
 
     const mp3buf = mp3encoder.flush();
     if (mp3buf && mp3buf.length > 0) {
-      mp3Data.push(mp3buf);
+      mp3Data.push(new Uint8Array(mp3buf).slice(0));
     }
     
-    // Create Blob from raw chunks (Blob handles typed arrays correctly)
-    return new Blob(mp3Data, { type: 'audio/mpeg' });
+    return new Blob(mp3Data as any, { type: 'audio/mpeg' });
   }
 }
