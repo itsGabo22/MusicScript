@@ -130,8 +130,15 @@ export const useMusicPlayer = () => {
     const song = playlist.setCurrentById(id);
     if (song) {
       setCurrentSong(song);
-      // UX FIXED: Always start playing when user explicitly selects a track
-      play();
+      
+      // UX CRITICAL: Force-update native element to bypass React render cycle delay
+      if (audioRef.current) {
+        audioRef.current.src = song.audioUrl;
+        // Resuming context within user click handler
+        audioAnalyzer.resume();
+        audioRef.current.play().catch(console.error);
+      }
+      setIsPlaying(true);
     }
   };
 
