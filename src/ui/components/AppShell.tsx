@@ -80,7 +80,7 @@ const AppShell: React.FC<AppShellProps> = ({
       {/* Main Content Area */}
       <main className="flex-1 h-full relative z-10 flex flex-col overflow-hidden">
         {/* Mobile Header - INTEGRATED CONTROLS */}
-        <div className="md:hidden flex items-center justify-between p-4 bg-[var(--bg-sidebar)] backdrop-blur-xl border-b border-[var(--border-color)]">
+        <div className="md:hidden flex h-16 shrink-0 items-center justify-between p-4 bg-[var(--bg-sidebar)] backdrop-blur-xl border-b border-[var(--border-color)] z-[90] relative">
           <div className="flex items-center gap-2">
             <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-[var(--text-main)]">
               <Menu className="w-6 h-6" />
