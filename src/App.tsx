@@ -13,7 +13,7 @@ import PlayerBar from './ui/components/PlayerBar';
 import CreatePlaylistModal from './ui/components/CreatePlaylistModal';
 import PlaylistPicker from './ui/components/PlaylistPicker';
 import { OnboardingModal } from './ui/components/OnboardingModal';
-import DeleteTrackModal from './ui/components/DeleteTrackModal';
+import { DeleteTrackModal } from './ui/components/DeleteTrackModal';
 import GuideView from './ui/views/GuideView';
 import AIAssistant from './ui/views/AIAssistant';
 import { LyricsService } from './infrastructure/services/LyricsService';
@@ -39,7 +39,7 @@ function App() {
 
   const [editingTrack, setEditingTrack] = useState<Song | null>(null);
   const [trimmingTrack, setTrimmingTrack] = useState<Song | null>(null);
-  const [trackToDelete, setTrackToDelete] = useState<{ song: Song, fromPlaylistId?: string } | null>(null);
+  const [trackToDelete, setTrackToDelete] = useState<Song | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(!localStorage.getItem('ms_tutorial_seen'));
   
   const [showTranslation, setShowTranslation] = useState(() => localStorage.getItem('ms_show_translation') === 'true');
@@ -209,27 +209,20 @@ function App() {
     setIsModalOpen(false);
   };
 
-  const handleDeleteTrack = (id: string) => {
+  const handleDeleteTrack = async (id: string) => {
     const song = library.librarySongs.find(s => s.id === id);
-    if (!song) return;
-
-    // Determine context (if it's a playlist view or just library)
-    const isPlaylist = !['library', 'favorites', 'ai', 'sync', 'guide'].includes(activeView);
-    setTrackToDelete({
-      song,
-      fromPlaylistId: isPlaylist ? activeView : undefined
-    });
+    if (song) setTrackToDelete(song);
   };
 
   const confirmDeleteLibrary = async () => {
     if (!trackToDelete) return;
-    await library.removeFromLibrary(trackToDelete.song.id);
+    await library.removeFromLibrary(trackToDelete.id);
     setTrackToDelete(null);
   };
 
   const confirmDeletePlaylist = async () => {
-    if (!trackToDelete || !trackToDelete.fromPlaylistId) return;
-    await playlists.removeTrackFromPlaylist(trackToDelete.fromPlaylistId, trackToDelete.song.id);
+    if (!trackToDelete) return;
+    await playlists.removeTrackFromPlaylist(activeView, trackToDelete.id);
     setTrackToDelete(null);
   };
 
@@ -411,11 +404,11 @@ function App() {
 
       <DeleteTrackModal 
         isOpen={!!trackToDelete}
+        trackTitle={trackToDelete?.title || ''}
+        isPlaylistContext={!['library', 'favorites'].includes(activeView)}
         onClose={() => setTrackToDelete(null)}
-        onConfirmLibrary={confirmDeleteLibrary}
-        onConfirmPlaylist={confirmDeletePlaylist}
-        songTitle={trackToDelete?.song.title}
-        isFromPlaylist={!!trackToDelete?.fromPlaylistId}
+        onDeleteFromLibrary={confirmDeleteLibrary}
+        onDeleteFromPlaylist={confirmDeletePlaylist}
       />
     </div>
   );
