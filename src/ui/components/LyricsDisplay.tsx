@@ -75,7 +75,7 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
     const translate = async () => {
       if (!parsedLyrics || parsedLyrics.length === 0 || !showTranslation) return;
       if (translatedLines.length > 0 || isTranslating.current) return;
-      
+
       isTranslating.current = true;
       setIsAIProcessing(true);
       try {
@@ -185,7 +185,7 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
 
         {/* Translation Status Indicator */}
         {isAIProcessing && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-1.5 md:gap-2 bg-emerald-500/10 px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-emerald-500/20 mr-2 md:mr-4"
@@ -224,7 +224,7 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
               {parsedLyrics.map((line, idx) => {
                 const isActive = idx === activeIndex;
                 const hasTranslation = translatedLines[idx] && translatedLines[idx].trim() !== "";
-                
+
                 return (
                   <motion.div
                     key={idx}
@@ -240,18 +240,16 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
                     transition={{ duration: 0.5 }}
                     className={`cursor-pointer transition-all text-center w-full px-4 max-w-2xl mx-auto`}
                   >
-                    <p className={`font-black text-xl md:text-3xl lg:text-5xl leading-tight tracking-tight break-words ${
-                      isActive ? 'text-emerald-500 drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'text-[var(--text-main)]'
+                    <p className={`font-black text-xl md:text-3xl lg:text-5xl leading-tight tracking-tight break-words ${isActive ? 'text-emerald-500 drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'text-[var(--text-main)]'
                       }`}>
                       {line.text}
                     </p>
                     {showTranslation && hasTranslation && (
-                      <motion.p 
+                      <motion.p
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: isActive ? 1 : 0.5, y: 0 }}
-                        className={`text-[0.6em] md:text-[0.55em] font-black italic mt-4 uppercase tracking-[0.2em] leading-relaxed break-words max-w-[90%] mx-auto ${
-                          isActive ? 'text-[var(--text-main)]' : 'text-[var(--text-muted)]'
-                        }`}
+                        className={`text-[0.6em] md:text-[0.55em] font-black italic mt-4 uppercase tracking-[0.2em] leading-relaxed break-words max-w-[90%] mx-auto ${isActive ? 'text-[var(--text-main)]' : 'text-[var(--text-muted)]'
+                          }`}
                       >
                         {translatedLines[idx]}
                       </motion.p>
@@ -279,7 +277,7 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
 
       <div className="mt-4 pt-4 border-t border-[var(--border-color)] text-center flex flex-col gap-1.5 items-center">
         <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] italic opacity-50">MUSICSCRIPT LYRICS SYSTEM v3.5</p>
-        <p className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.3em] opacity-40">Powered by Gemini AI & LRCLib</p>
+        <p className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.3em] opacity-40">Powered by Gemini AI, Lyrics.ovh & LRCLib</p>
       </div>
     </motion.div>
   );

@@ -165,7 +165,7 @@ const DefaultPlayer: React.FC<DefaultPlayerProps> = ({
         </header>
 
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar smooth-scroll mx-2 md:mx-0 bg-black/5 md:bg-transparent rounded-[32px] p-2 md:p-0">
-          <div className="space-y-3">
+          <div className="space-y-3 pb-44 md:pb-8">
             {songs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 opacity-30 text-center">
                 <div className="w-24 h-24 mb-4">

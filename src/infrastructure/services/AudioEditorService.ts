@@ -1,5 +1,5 @@
 // @ts-ignore
-import lamejs from 'lamejs';
+import * as lamejs from 'lamejs';
 
 export class AudioEditorService {
   private static audioContext: AudioContext;
@@ -112,21 +112,80 @@ export class AudioEditorService {
   }
 
   /**
+   * Resamples an AudioBuffer to a target sample rate.
+   */
+  public static async resampleBuffer(buffer: AudioBuffer, targetRate: number): Promise<AudioBuffer> {
+    if (buffer.sampleRate === targetRate) return buffer;
+    
+    const offlineCtx = new OfflineAudioContext(
+      buffer.numberOfChannels, 
+      Math.ceil(buffer.duration * targetRate), 
+      targetRate
+    );
+    
+    const source = offlineCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(offlineCtx.destination);
+    source.start(0);
+    
+    return await offlineCtx.startRendering();
+  }
+
+  /**
    * Encodes an AudioBuffer into an MP3 Blob using lamejs.
    */
-  public static encodeToMp3(buffer: AudioBuffer): Blob {
-    const channels = buffer.numberOfChannels;
-    const sampleRate = buffer.sampleRate;
+  public static async encodeToMp3(buffer: AudioBuffer): Promise<Blob> {
+    // MP3 standard is 44100
+    const targetBuffer = await this.resampleBuffer(buffer, 44100);
+    
+    const channels = targetBuffer.numberOfChannels;
+    const sampleRate = targetBuffer.sampleRate;
     const kbps = 128;
-    const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps);
-    const mp3Data: Int8Array[] = [];
+    
+    // lamejs fix: Exhaustive shim of internal classes needed for the encoding process
+    if (typeof window !== 'undefined') {
+      const g = window as any;
+      const l = lamejs as any;
+      
+      // MPEGMode shim
+      if (!g.MPEGMode) {
+        g.MPEGMode = l.MPEGMode || {
+          STEREO: { ordinal: 0 },
+          JOINT_STEREO: { ordinal: 1 },
+          DUAL_CHANNEL: { ordinal: 2 },
+          MONO: { ordinal: 3 },
+          NOT_SET: { ordinal: 4 }
+        };
+      }
+      
+      // Essential classes often used internally by Mp3Encoder
+      g.Lame = l.Lame || g.Lame || {};
+      g.Presets = l.Presets || g.Presets || {};
+      g.BitStream = l.BitStream || g.BitStream || function() {};
+      g.VbrMode = l.VbrMode || g.VbrMode;
+      g.Quantize = l.Quantize || g.Quantize;
+      g.LameEncoder = l.LameEncoder || g.LameEncoder;
+      g.Arrays = l.Arrays || g.Arrays;
+      g.System = l.System || g.System;
+      g.Util = l.Util || g.Util;
+      g.Float = l.Float || g.Float || { MAX_VALUE: 3.4028235e+38 };
 
-    const left = buffer.getChannelData(0);
-    const right = channels > 1 ? buffer.getChannelData(1) : left;
+      // BitStream.EQ is a critical internal comparator
+      if (g.BitStream && !g.BitStream.EQ) {
+        g.BitStream.EQ = (a: any, b: any) => a == b;
+      }
+    }
+
+    // @ts-ignore
+    const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps);
+    const mp3Data: any[] = []; // Changed to any[] for robustness
+
+    const left = targetBuffer.getChannelData(0);
+    const right = channels > 1 ? targetBuffer.getChannelData(1) : left;
 
     const sampleBlockSize = 1152;
     
-    // convert float32 to int16
+    // convert float32 to int16 with better clamping
     const leftInt16 = new Int16Array(left.length);
     const rightInt16 = new Int16Array(right.length);
     
@@ -138,6 +197,7 @@ export class AudioEditorService {
         rightInt16[i] = r < 0 ? r * 0x8000 : r * 0x7FFF;
     }
 
+    // CHUNKED ASYNC ENCODING: Avoid hanging the UI
     for (let i = 0; i < leftInt16.length; i += sampleBlockSize) {
       const leftChunk = leftInt16.subarray(i, i + sampleBlockSize);
       const rightChunk = rightInt16.subarray(i, i + sampleBlockSize);
@@ -146,16 +206,23 @@ export class AudioEditorService {
           mp3encoder.encodeBuffer(leftChunk, rightChunk) : 
           mp3encoder.encodeBuffer(leftChunk);
           
-      if (mp3buf.length > 0) {
+      if (mp3buf && mp3buf.length > 0) {
+        // Use the original Int8Array from lamejs directly for byte-integrity
         mp3Data.push(mp3buf);
+      }
+
+      // Yield every ~115,000 samples to keep UI alive
+      if (i % (sampleBlockSize * 100) === 0) {
+        await new Promise(resolve => setTimeout(resolve, 0));
       }
     }
 
     const mp3buf = mp3encoder.flush();
-    if (mp3buf.length > 0) {
+    if (mp3buf && mp3buf.length > 0) {
       mp3Data.push(mp3buf);
     }
     
-    return new Blob(mp3Data as any, { type: 'audio/mp3' });
+    // Create Blob from raw chunks (Blob handles typed arrays correctly)
+    return new Blob(mp3Data, { type: 'audio/mpeg' });
   }
 }

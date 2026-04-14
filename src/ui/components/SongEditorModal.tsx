@@ -126,15 +126,14 @@ export const SongEditorModal: React.FC<SongEditorModalProps> = ({ song, isOpen, 
     setIsPlaying(false);
   };
 
-  const processAndGetBlob = (format: 'wav' | 'mp3' = 'wav'): Blob | null => {
+  const processAndGetBlob = async (format: 'wav' | 'mp3' = 'wav'): Promise<Blob | null> => {
     if (!audioBuffer) return null;
     setIsProcessing(true);
     let trimmedBlob: Blob | null = null;
     try {
-      // Allow the UI to paint the loading state deeply if mp3 is requested as it's synchronous block
       const newBuffer = AudioEditorService.trimAudio(audioBuffer, startTime, endTime);
       trimmedBlob = format === 'mp3' 
-        ? AudioEditorService.encodeToMp3(newBuffer)
+        ? await AudioEditorService.encodeToMp3(newBuffer)
         : AudioEditorService.encodeToWav(newBuffer);
     } catch(e) {
       console.error(e);
@@ -151,24 +150,21 @@ export const SongEditorModal: React.FC<SongEditorModalProps> = ({ song, isOpen, 
   };
 
   // ACTIONS
-  const handleDownload = (format: 'wav' | 'mp3' = 'wav') => {
-    // Timeout to allow the "Procesando" state to render before the blocking synchronous encoding starts
-    setTimeout(() => {
-      const blob = processAndGetBlob(format);
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${song?.artist} - ${song?.title} (Recorte).${format}`;
-      a.click();
-      URL.revokeObjectURL(url);
-      onClose();
-    }, 10);
+  const handleDownload = async (format: 'wav' | 'mp3' = 'wav') => {
+    const blob = await processAndGetBlob(format);
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${song?.artist} - ${song?.title} (Recorte).${format}`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+    onClose();
   };
 
   const handleSaveCopy = async () => {
     if (!song) return;
-    const blob = processAndGetBlob();
+    const blob = await processAndGetBlob();
     if (!blob) return;
     
     setIsProcessing(true);
@@ -197,7 +193,7 @@ export const SongEditorModal: React.FC<SongEditorModalProps> = ({ song, isOpen, 
     const confirm = window.confirm("¿Seguro que deseas reemplazar el archivo original en la biblioteca? Esta acción es destructiva.");
     if (!confirm) return;
 
-    const blob = processAndGetBlob();
+    const blob = await processAndGetBlob();
     if (!blob) return;
     
     setIsProcessing(true);

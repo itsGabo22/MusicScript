@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MonitorPlay, Download, Check, RefreshCw, FileArchive, ArrowUpCircle, AlertCircle, History } from 'lucide-react';
+import { MonitorPlay, Download, Check, RefreshCw, FileArchive, ArrowUpCircle, AlertCircle, History, ArrowLeft } from 'lucide-react';
 import { syncBridgeService } from '../../infrastructure/services/SyncBridgeService';
 import { usePlaylists } from '../../hooks/usePlaylists';
 import { useLibrary } from '../../hooks/useLibrary';
@@ -115,7 +115,7 @@ export const SyncCenterView: React.FC = () => {
 
         {perspective === 'idle' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-            <button onClick={() => setPerspective('host')} className="group bg-[var(--bg-card)] border border-white/5 hover:border-emerald-500/50 p-8 rounded-3xl transition-all shadow-xl hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] flex flex-col items-center text-center">
+            <button onClick={() => setPerspective('host')} className="group bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-emerald-500/50 p-8 rounded-3xl transition-all shadow-xl hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] flex flex-col items-center text-center">
                <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                  <FileArchive className="w-10 h-10 text-emerald-500" />
                </div>
@@ -123,7 +123,7 @@ export const SyncCenterView: React.FC = () => {
                <p className="text-sm font-bold text-[var(--text-muted)] text-center leading-relaxed">Genera un archivo .mssync con tu música seleccionada para migrarla.</p>
             </button>
 
-            <button onClick={() => setPerspective('client')} className="group bg-[var(--bg-card)] border border-white/5 hover:border-blue-500/50 p-8 rounded-3xl transition-all shadow-xl hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] flex flex-col items-center text-center">
+            <button onClick={() => setPerspective('client')} className="group bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-blue-500/50 p-8 rounded-3xl transition-all shadow-xl hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] flex flex-col items-center text-center">
                <div className="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                  <ArrowUpCircle className="w-10 h-10 text-blue-500" />
                </div>
@@ -134,9 +134,12 @@ export const SyncCenterView: React.FC = () => {
         )}
 
         {perspective !== 'idle' && (
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-[var(--bg-card)] border border-white/10 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden">
-            <button onClick={() => { setPerspective('idle'); setIsSuccess(false); setImportSummary(null); }} className="absolute py-2 top-6 left-6 text-xs text-white/50 hover:text-white uppercase font-black tracking-widest">
-              ← Volver
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden">
+            <button 
+              onClick={() => { setPerspective('idle'); setIsSuccess(false); setImportSummary(null); }} 
+              className="absolute top-6 left-6 flex items-center gap-2 px-3 py-1.5 bg-black/5 dark:bg-white/5 rounded-full text-[10px] text-[var(--text-muted)] hover:text-[var(--text-main)] uppercase font-black tracking-widest transition-all"
+            >
+              <ArrowLeft className="w-3 h-3" /> Volver
             </button>
 
             {perspective === 'host' && (
@@ -149,11 +152,11 @@ export const SyncCenterView: React.FC = () => {
                     {/* Selector de Contenido */}
                     <div className="w-full max-w-sm">
                        <label className="text-[10px] font-black uppercase text-emerald-500 tracking-widest block mb-3 text-center">Contenido de la Bóveda</label>
-                        <select 
-                          value={selectedPlaylistId}
-                          onChange={(e) => setSelectedPlaylistId(e.target.value)}
-                          className="w-full bg-[var(--bg-main)] border border-[var(--border-color)] text-[var(--text-main)] p-4 rounded-2xl font-bold focus:border-emerald-500 outline-none transition-all appearance-none text-center cursor-pointer hover:bg-black/5"
-                        >
+                       <select 
+                         value={selectedPlaylistId}
+                         onChange={(e) => setSelectedPlaylistId(e.target.value)}
+                         className="w-full bg-black/5 dark:bg-black/40 border border-[var(--border-color)] text-[var(--text-main)] p-4 rounded-2xl font-bold focus:border-emerald-500 outline-none transition-all appearance-none text-center cursor-pointer hover:bg-black/10"
+                       >
                          <option value="all">Toda la Biblioteca ({libraryData.librarySongs.length} canciones)</option>
                          <optgroup label="Exportar Playlist Específica">
                             {playlistsData.playlists.map(pl => (
@@ -174,10 +177,10 @@ export const SyncCenterView: React.FC = () => {
                 )}
 
                 {isProcessing && (
-                  <div className="w-full max-w-md bg-black/30 p-8 rounded-3xl border border-white/5 text-center mx-auto">
+                  <div className="w-full max-w-md bg-black/5 dark:bg-black/20 p-8 rounded-3xl border border-[var(--border-color)] text-center mx-auto shadow-xl">
                     <RefreshCw className="w-10 h-10 text-emerald-500 animate-spin mx-auto mb-6" />
                     <p className="font-black text-[var(--text-main)] text-center uppercase italic text-sm mb-4 tracking-widest">{progress.message}</p>
-                    <div className="w-full bg-[var(--border-color)] h-3 rounded-full overflow-hidden mb-3">
+                    <div className="w-full bg-black/10 dark:bg-white/5 h-3 rounded-full overflow-hidden mb-3">
                       <div className="bg-emerald-500 h-full transition-all duration-300" style={{ width: `${progress.current}%` }} />
                     </div>
                     <p className="text-[10px] font-black text-center text-[var(--text-muted)] uppercase tracking-widest">{progress.current}% COMPLETADO</p>
@@ -191,7 +194,7 @@ export const SyncCenterView: React.FC = () => {
                     </div>
                     <h3 className="text-3xl font-black text-center text-[var(--text-main)] uppercase italic mb-2 tracking-tighter">¡Bóveda Generada!</h3>
                     <p className="text-[var(--text-muted)] text-center font-bold mb-8">El archivo ya debería estar en tu carpeta de descargas.</p>
-                    <button onClick={() => setPerspective('idle')} className="text-xs font-black text-center text-white/30 hover:text-white uppercase tracking-widest mx-auto block">Finalizar</button>
+                    <button onClick={() => setPerspective('idle')} className="text-xs font-black text-center text-[var(--text-muted)] hover:text-[var(--text-main)] uppercase tracking-widest mx-auto block px-6 py-3 bg-[var(--bg-main)] rounded-full border border-[var(--border-color)] transition-all">Finalizar</button>
                   </div>
                 )}
               </div>
@@ -203,7 +206,7 @@ export const SyncCenterView: React.FC = () => {
                 <p className="text-[var(--text-muted)] font-bold text-center mb-12 max-w-sm mx-auto">Selecciona el archivo .mssync para añadir la música a este navegador.</p>
 
                 {!isProcessing && !isSuccess && (
-                   <label className="group w-full max-w-md h-64 border-2 border-dashed border-white/10 hover:border-blue-500/40 rounded-[40px] flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-blue-500/5 transition-all">
+                   <label className="group w-full max-w-md h-64 border-2 border-dashed border-[var(--border-color)] hover:border-blue-500/40 rounded-[40px] flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-blue-500/5 transition-all">
                       <input 
                         type="file" 
                         accept=".mssync, .zip, application/zip, application/x-zip-compressed" 
@@ -219,10 +222,10 @@ export const SyncCenterView: React.FC = () => {
                 )}
 
                 {isProcessing && (
-                  <div className="w-full max-w-md bg-black/30 p-8 rounded-3xl border border-white/5 text-center mx-auto">
+                  <div className="w-full max-w-md bg-black/5 dark:bg-black/20 p-8 rounded-3xl border border-[var(--border-color)] text-center mx-auto shadow-xl">
                     <RefreshCw className="w-10 h-10 text-blue-500 animate-spin mx-auto mb-6" />
                     <p className="font-black text-[var(--text-main)] text-center uppercase italic text-sm mb-4 tracking-widest">{progress.message}</p>
-                    <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden mb-3">
+                    <div className="w-full bg-black/10 dark:bg-white/5 h-3 rounded-full overflow-hidden mb-3">
                       <div className="bg-blue-500 h-full transition-all duration-300" style={{ width: `${progress.current}%` }} />
                     </div>
                   </div>
@@ -237,15 +240,15 @@ export const SyncCenterView: React.FC = () => {
                     <div className="flex justify-center gap-6 mt-6 mb-8">
                        <div className="text-center">
                          <p className="text-2xl font-black text-emerald-400">{importSummary.imported}</p>
-                         <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">Nuevas</p>
+                         <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Nuevas</p>
                        </div>
                        <div className="text-center">
                          <p className="text-2xl font-black text-blue-400">{importSummary.replaced}</p>
-                         <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">Reemplazadas</p>
+                         <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Reemplazadas</p>
                        </div>
                        <div className="text-center">
-                         <p className="text-2xl font-black text-white/30">{importSummary.skipped}</p>
-                         <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">Omitidas</p>
+                         <p className="text-2xl font-black text-[var(--text-muted)]/40">{importSummary.skipped}</p>
+                         <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Omitidas</p>
                        </div>
                     </div>
                     <button onClick={() => window.location.reload()} className="bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all mx-auto block">Ver mi Biblioteca</button>
@@ -259,7 +262,7 @@ export const SyncCenterView: React.FC = () => {
         {/* MODALES / DIÁLOGOS DE CONFLICTO */}
         {conflict && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[var(--bg-card)] border border-white/10 rounded-[32px] p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
+             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[32px] p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
                 <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto">
                    <AlertCircle className="w-8 h-8 text-orange-500" />
                 </div>
@@ -272,7 +275,7 @@ export const SyncCenterView: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                    <button 
                      onClick={() => conflict.resolve('skip')}
-                     className="bg-white/5 hover:bg-white/10 text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest transition-all"
+                     className="bg-black/10 dark:bg-white/5 hover:bg-black/20 text-[var(--text-main)] py-4 rounded-xl font-black uppercase text-xs tracking-widest transition-all"
                    >
                      Omitir
                    </button>
