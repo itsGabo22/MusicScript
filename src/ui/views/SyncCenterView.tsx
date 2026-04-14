@@ -149,11 +149,11 @@ export const SyncCenterView: React.FC = () => {
                     {/* Selector de Contenido */}
                     <div className="w-full max-w-sm">
                        <label className="text-[10px] font-black uppercase text-emerald-500 tracking-widest block mb-3 text-center">Contenido de la Bóveda</label>
-                       <select 
-                         value={selectedPlaylistId}
-                         onChange={(e) => setSelectedPlaylistId(e.target.value)}
-                         className="w-full bg-black/20 border border-white/5 text-white/80 p-4 rounded-2xl font-bold focus:border-emerald-500 outline-none transition-all appearance-none text-center cursor-pointer hover:bg-black/30"
-                       >
+                        <select 
+                          value={selectedPlaylistId}
+                          onChange={(e) => setSelectedPlaylistId(e.target.value)}
+                          className="w-full bg-[var(--bg-main)] border border-[var(--border-color)] text-[var(--text-main)] p-4 rounded-2xl font-bold focus:border-emerald-500 outline-none transition-all appearance-none text-center cursor-pointer hover:bg-black/5"
+                        >
                          <option value="all">Toda la Biblioteca ({libraryData.librarySongs.length} canciones)</option>
                          <optgroup label="Exportar Playlist Específica">
                             {playlistsData.playlists.map(pl => (
@@ -177,10 +177,10 @@ export const SyncCenterView: React.FC = () => {
                   <div className="w-full max-w-md bg-black/30 p-8 rounded-3xl border border-white/5 text-center mx-auto">
                     <RefreshCw className="w-10 h-10 text-emerald-500 animate-spin mx-auto mb-6" />
                     <p className="font-black text-[var(--text-main)] text-center uppercase italic text-sm mb-4 tracking-widest">{progress.message}</p>
-                    <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden mb-3">
+                    <div className="w-full bg-[var(--border-color)] h-3 rounded-full overflow-hidden mb-3">
                       <div className="bg-emerald-500 h-full transition-all duration-300" style={{ width: `${progress.current}%` }} />
                     </div>
-                    <p className="text-[10px] font-black text-center text-white/40 uppercase tracking-widest">{progress.current}% COMPLETADO</p>
+                    <p className="text-[10px] font-black text-center text-[var(--text-muted)] uppercase tracking-widest">{progress.current}% COMPLETADO</p>
                   </div>
                 )}
 

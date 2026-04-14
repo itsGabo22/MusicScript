@@ -36,7 +36,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
   onAddToPlaylist
 }) => {
   const [visualData, setVisualData] = useState<number[]>(new Array(16).fill(0));
-  const [intensities, setIntensities] = useState({ bass: 0, avg: 0 });
+  const [intensities, setIntensities] = useState({ bass: 0.05, avg: 0.05 });
   const [isEQOpen, setIsEQOpen] = useState(false);
   const rafRef = useRef<number | null>(null);
 
@@ -64,8 +64,8 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
         
         setVisualData(reducedData);
         setIntensities({
-          bass: (bassSum / 4) * (isPlaying ? 1 : 0),
-          avg: (totalSum / 16) * (isPlaying ? 1 : 0)
+          bass: isPlaying ? (bassSum / 4) : 0.05,
+          avg: isPlaying ? (totalSum / 16) : 0.05
         });
       }
       rafRef.current = requestAnimationFrame(update);
@@ -97,11 +97,11 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
     const center = 50; // Center axis
     const topPoints = visualData.map((val, i) => ({
       x: (i / (visualData.length - 1)) * width,
-      y: center - (val * 45) // Scaled to 45% of height per side
+      y: center - (val * 85) // Explosive scaling
     }));
     const botPoints = visualData.map((val, i) => ({
       x: (i / (visualData.length - 1)) * width,
-      y: center + (val * 45)
+      y: center + (val * 85)
     }));
 
     const buildPath = (pts: {x: number, y: number}[]) => {
@@ -125,34 +125,34 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
     <motion.div 
       initial={{ y: 100 }}
       animate={{ y: 0 }}
-      className="fixed bottom-0 left-0 right-0 h-24 md:h-28 bg-[var(--bg-glass)] backdrop-blur-3xl border-t border-white/10 z-[100] px-2 md:px-8 flex items-center transition-all duration-500 shadow-[0_-20px_60px_rgba(0,0,0,0.5)] overflow-hidden"
+      className="fixed bottom-0 left-0 right-0 h-24 md:h-28 bg-[var(--bg-glass)] backdrop-blur-3xl border-t border-white/10 z-[100] px-2 md:px-8 flex items-center transition-all duration-500 shadow-[0_-20px_60px_rgba(0,0,0,0.5)]"
     >
-      {/* 0. PREMIUM ENERGY BLOBS (Reactive Background) */}
-      <div className="absolute inset-0 pointer-events-none opacity-20 md:opacity-30">
+      {/* 0. PREMIUM ENERGY BLOBS (Reactive Background - Now more visible) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-t-[40px]">
         <motion.div 
           animate={{ 
-            x: [0, 50, -30, 0], 
-            y: [0, -30, 40, 0],
-            scale: 1 + intensities.bass * 0.4,
-            opacity: 0.1 + intensities.avg * 0.4
+            x: [0, 80, -40, 0], 
+            y: [0, -40, 60, 0],
+            scale: 1.5 + intensities.bass * 1.5,
+            opacity: 0.2 + intensities.avg * 0.4
           }}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-          className="absolute top-0 left-[20%] w-64 h-64 bg-emerald-500/40 blur-[100px] rounded-full"
+          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+          className="absolute top-[-20%] left-[10%] w-72 h-72 bg-emerald-500/40 blur-[120px] rounded-full mix-blend-overlay"
         />
         <motion.div 
           animate={{ 
-            x: [0, -40, 60, 0], 
-            y: [0, 50, -20, 0],
-            scale: 0.8 + intensities.avg * 0.5,
-            opacity: 0.05 + intensities.bass * 0.3
+            x: [0, -60, 90, 0], 
+            y: [0, 70, -30, 0],
+            scale: 1 + intensities.avg * 2,
+            opacity: 0.15 + intensities.bass * 0.3
           }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-0 right-[40%] w-80 h-80 bg-emerald-400/30 blur-[120px] rounded-full"
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute bottom-[-10%] right-[20%] w-96 h-96 bg-blue-500/30 blur-[150px] rounded-full mix-blend-screen"
         />
       </div>
 
       {/* 1. SONG INFO (LEFT) */}
-      <div className="flex w-[25%] md:w-[30%] items-center gap-2 md:gap-5 shrink-0 min-w-0 relative z-10">
+      <div className="flex w-[25%] md:w-[30%] items-center gap-2 md:gap-5 shrink-0 min-w-0 relative z-20">
         <motion.div 
           animate={{ 
             scale: isPlaying ? 1 + intensities.bass * 0.08 : 1,
@@ -177,7 +177,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
       </div>
 
       {/* 2. PLAYER CONTROLS (CENTER) */}
-      <div className="flex-1 flex flex-col items-center gap-1.5 md:gap-4 px-1 md:px-4 relative z-10">
+      <div className="flex-1 flex flex-col items-center gap-1.5 md:gap-4 px-1 md:px-4 relative z-20">
         <div className="flex items-center gap-2 sm:gap-8 lg:gap-14">
           <div className="flex items-center gap-1 md:gap-4">
             <button 
@@ -230,7 +230,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
           
           <div className="relative flex-1 group h-1 bg-[var(--border-color)] rounded-full cursor-pointer">
             {/* 1. HOLOGRAPHIC WAVE SYSTEM (Unified Eje) */}
-            <div className="absolute left-0 right-0 -top-12 md:-top-16 bottom-[-12px] md:bottom-[-16px] pointer-events-none z-0 overflow-hidden">
+            <div className="absolute left-0 right-0 top-[-16px] bottom-[-16px] pointer-events-none z-0 overflow-hidden">
                <svg viewBox="0 0 1000 100" preserveAspectRatio="none" className="w-full h-full opacity-10">
                  <path d={svgPaths.top} fill="none" stroke="#10b981" strokeWidth="1" />
                  <path d={svgPaths.bot} fill="none" stroke="#10b981" strokeWidth="1" opacity="0.5" />
@@ -240,7 +240,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
 
             {/* 2. PROGRESS WAVE (Clipped) */}
             <div 
-              className="absolute left-0 -top-12 md:-top-16 bottom-[-12px] md:bottom-[-16px] pointer-events-none z-10 overflow-hidden transition-all duration-300"
+              className="absolute left-0 top-[-16px] bottom-[-16px] pointer-events-none z-10 overflow-hidden transition-all duration-300"
               style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
             >
                <svg viewBox="0 0 1000 100" preserveAspectRatio="none" className="w-[100vw] h-full" style={{ width: `${(100 / (currentTime / duration || 0.001))}%` }}>
@@ -284,9 +284,9 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
       </div>
 
       {/* 3. PC EXTRA CONTROLS */}
-      <div className="hidden md:flex md:w-[30%] items-center justify-end gap-5 shrink-0 relative z-10">
+      <div className="hidden md:flex md:w-[30%] items-center justify-end gap-5 shrink-0 relative z-20">
         {sourceTitle && (
-            <div className="hidden lg:flex items-center gap-2 bg-white/5 border border-white/5 px-3 py-1 rounded-full max-w-[150px]">
+            <div className="hidden lg:flex items-center gap-2 bg-white/5 border border-white/5 px-4 py-1.5 rounded-full max-w-[240px]">
               <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
               <span className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest truncate">{sourceTitle}</span>
             </div>
