@@ -81,6 +81,27 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
     };
   }, [isPlaying]);
 
+  // INTELLIGENT AMBIENT GENERATOR (Dark Mode & Forced Update)
+  const albumColors = useMemo(() => {
+    if (!currentSong) return { primary: '#064e3b', secondary: '#1e3a8a', accent: '#4c1d95' };
+    
+    // Deterministic hash with high entropy
+    const str = `${currentSong.title}${currentSong.artist}${currentSong.id || ''}`;
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+    }
+    
+    // Low Lightness (20-30%) for 'Dark Moody' aesthetic
+    const h = Math.abs(hash * 137.5) % 360;
+    return {
+      primary: `hsl(${h}, 85%, 25%)`,
+      secondary: `hsl(${(h + 60) % 360}, 80%, 20%)`,
+      accent: `hsl(${(h + 160) % 360}, 90%, 30%)`
+    };
+  }, [currentSong?.id, currentSong?.title]);
+
   const formatTime = (time: number) => {
     const mins = Math.floor(time / 60);
     const secs = Math.floor(time % 60);
@@ -140,21 +161,21 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
       animate={{ y: 0 }}
       className="fixed bottom-0 left-0 right-0 h-24 md:h-28 bg-[var(--bg-glass)] backdrop-blur-3xl border-t border-white/10 z-[100] px-2 md:px-8 flex items-center transition-all duration-500 shadow-[0_-20px_60px_rgba(0,0,0,0.5)]"
     >
-      {/* 0. DYNAMIC NEON BACKGROUND (100% Reactive) */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+      {/* 0. DYNAMIC NEON BACKGROUND (Forced Update with Key) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0" key={currentSong?.id || 'idle'}>
         <motion.div 
           animate={{ 
-            // 100% INSTANTANEOUS REACTIVITY (No more loops)
+            // 100% INSTANTANEOUS REACTIVITY + DARK LOCALIZED PULSE
             background: isPlaying ? 
-              `radial-gradient(circle at 15% 50%, hsla(${140 + intensities.avg * 120}, 100%, 50%, ${0.1 + intensities.avg * 0.75}), transparent 85%),
-               radial-gradient(circle at 50% 50%, hsla(${180 + intensities.mid * 110}, 100%, 50%, ${0.1 + intensities.mid * 0.75}), transparent 85%),
-               radial-gradient(circle at 85% 50%, hsla(${220 + intensities.bass * 110}, 100%, 50%, ${0.1 + intensities.bass * 0.75}), transparent 85%)` 
-              : `radial-gradient(circle at 50% 50%, rgba(128, 128, 128, 0.05), transparent 90%)`,
-            opacity: isPlaying ? 0.3 + intensities.avg * 0.7 : 0.05,
-            scale: isPlaying ? 1 + intensities.avg * 0.45 : 1
+              `radial-gradient(circle at 20% 50%, ${albumColors.primary}, transparent 45%),
+               radial-gradient(circle at 50% 50%, ${albumColors.secondary}, transparent 45%),
+               radial-gradient(circle at 80% 50%, ${albumColors.accent}, transparent 45%)` 
+              : `radial-gradient(circle at 50% 50%, rgba(128, 128, 128, 0.03), transparent 60%)`,
+            opacity: isPlaying ? 0.3 + intensities.avg * 0.45 : 0.03,
+            scale: isPlaying ? 1 + intensities.avg * 0.3 : 1
           }}
           transition={{ duration: 0.1, ease: "linear" }}
-          className={`absolute inset-0 ${isPlaying ? 'saturate-[3.5] brightness-125' : 'saturate-0'} transition-all duration-1000 bg-black/5`}
+          className={`absolute inset-0 saturate-[2.2] brightness-90 transition-all duration-1000 bg-black/10`}
         />
         <motion.div 
           animate={{ 
