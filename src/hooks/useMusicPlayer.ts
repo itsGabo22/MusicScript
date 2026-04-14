@@ -136,7 +136,12 @@ export const useMusicPlayer = () => {
         audioRef.current.src = song.audioUrl;
         // Resuming context within user click handler
         audioAnalyzer.resume();
-        audioRef.current.play().catch(console.error);
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            if (error.name !== 'AbortError') console.error('Playback failed:', error);
+          });
+        }
       }
       setIsPlaying(true);
     }

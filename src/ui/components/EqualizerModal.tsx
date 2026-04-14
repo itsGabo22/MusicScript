@@ -52,7 +52,7 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({ isOpen, onClose 
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-        className="fixed z-50 bottom-28 left-4 right-4 sm:left-auto sm:right-8 sm:w-[420px] bg-[var(--bg-card)]/90 backdrop-blur-2xl border border-[var(--border-color)] rounded-3xl shadow-2xl overflow-hidden"
+        className="fixed z-[200] bottom-28 left-4 right-4 sm:left-auto sm:right-8 sm:w-[460px] bg-[var(--bg-card)]/95 backdrop-blur-3xl border border-[var(--border-color)] rounded-[40px] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden"
       >
         <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)] bg-black/20">
           <div className="flex items-center gap-2 text-white font-black uppercase tracking-wider text-sm p-1">
