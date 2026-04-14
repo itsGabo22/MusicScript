@@ -154,10 +154,16 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
       initial={{ opacity: 0, scale: 0.95, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
-      className="absolute inset-0 z-40 bg-black/90 backdrop-blur-2xl rounded-[40px] p-4 md:p-8 flex flex-col border border-white/10 shadow-2xl overflow-hidden"
+      className="absolute inset-0 z-40 bg-[var(--bg-sidebar)] md:bg-[var(--bg-glass)] backdrop-blur-3xl rounded-[30px] md:rounded-[40px] p-4 md:p-8 flex flex-col border border-[var(--border-color)] shadow-2xl overflow-hidden"
     >
+      {/* 0. DYNAMIC HOLOGRAPHIC BG (Subtle) */}
+      <div className="absolute inset-0 pointer-events-none opacity-20">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/20 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-400/10 blur-[120px] rounded-full animate-glow-pulse" />
+      </div>
+
       {/* Header */}
-      <div className="flex justify-between items-center mb-6 shrink-0 bg-white/5 p-3 rounded-3xl border border-white/5 relative z-30">
+      <div className="flex justify-between items-center mb-6 shrink-0 bg-[var(--border-color)] p-3 rounded-3xl border border-[var(--border-color)] relative z-30">
         <div className="flex items-center gap-4 min-w-0 flex-1 px-1">
           <motion.div
             animate={{ rotate: 360 }}
@@ -167,14 +173,13 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
             <div className="absolute inset-0 bg-emerald-500/20 blur-lg rounded-full" />
             <img
               src={coverUrl || 'https://picsum.photos/200/200'}
-              className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-emerald-500/50 relative z-10"
+              className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-emerald-500/50 relative z-10 shadow-lg"
               alt="Cover"
             />
           </motion.div>
-
           <div className="min-w-0 flex-1">
-            <h3 className="font-black text-sm md:text-base text-white italic truncate uppercase">{title}</h3>
-            <p className="text-[8px] text-emerald-500 font-black tracking-widest uppercase opacity-80">{artist}</p>
+            <h3 className="font-black text-sm md:text-base text-[var(--text-main)] italic truncate uppercase">{title}</h3>
+            <p className="text-[9px] text-emerald-500 font-black tracking-widest uppercase opacity-90">{artist}</p>
           </div>
         </div>
 
@@ -186,16 +191,16 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
             className="flex items-center gap-1.5 md:gap-2 bg-emerald-500/10 px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-emerald-500/20 mr-2 md:mr-4"
           >
             <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-[6px] md:text-[8px] font-black text-emerald-500 uppercase tracking-widest whitespace-nowrap">AI Traduciendo...</span>
+            <span className="text-[7px] md:text-[9px] font-black text-emerald-500 uppercase tracking-widest whitespace-nowrap">AI Traduciendo...</span>
           </motion.div>
         )}
 
-        <button onClick={onClose} className="p-2 text-white/40 hover:text-white transition-all">
+        <button onClick={onClose} className="p-2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-all">
           <X className="w-6 h-6" />
         </button>
       </div>
 
-      {/* Lyrics container with CSS Mask for professional fade */}
+      {/* Lyrics container */}
       <div className="flex-grow relative overflow-hidden group">
         <div
           ref={scrollRef}
@@ -212,7 +217,7 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
           {isLoading ? (
             <div className="flex flex-col items-center justify-center h-full gap-4 text-emerald-500/50">
               <div className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin" />
-              <p className="text-[9px] font-black uppercase tracking-widest">Sincronizando...</p>
+              <p className="text-[10px] font-black uppercase tracking-widest">Sincronizando...</p>
             </div>
           ) : parsedLyrics ? (
             <div className="flex flex-col items-center gap-14 py-20 px-4">
@@ -229,14 +234,14 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
                       setIsAutoScrolling(true);
                     }}
                     animate={{
-                      opacity: isActive ? 1 : 0.3,
+                      opacity: isActive ? 1 : 0.35,
                       scale: isActive ? 1.05 : 0.95,
-                      filter: isActive ? 'blur(0px)' : 'blur(0.4px)'
                     }}
                     transition={{ duration: 0.5 }}
                     className={`cursor-pointer transition-all text-center w-full px-4 max-w-2xl mx-auto`}
                   >
-                    <p className={`font-black text-xl md:text-3xl lg:text-4xl leading-tight tracking-tight break-words ${isActive ? 'text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'text-white/60'
+                    <p className={`font-black text-xl md:text-3xl lg:text-5xl leading-tight tracking-tight break-words ${
+                      isActive ? 'text-emerald-500 drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'text-[var(--text-main)]'
                       }`}>
                       {line.text}
                     </p>
@@ -244,7 +249,9 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
                       <motion.p 
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: isActive ? 1 : 0.5, y: 0 }}
-                        className={`text-[0.6em] md:text-[0.55em] font-bold italic mt-3 uppercase tracking-widest leading-relaxed break-words max-w-[90%] mx-auto ${isActive ? 'text-white/80' : 'text-white/30'}`}
+                        className={`text-[0.6em] md:text-[0.55em] font-black italic mt-4 uppercase tracking-[0.2em] leading-relaxed break-words max-w-[90%] mx-auto ${
+                          isActive ? 'text-[var(--text-main)]' : 'text-[var(--text-muted)]'
+                        }`}
                       >
                         {translatedLines[idx]}
                       </motion.p>
@@ -254,8 +261,8 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
               })}
             </div>
           ) : (
-            <div className="py-20 text-center text-white/10 uppercase font-black text-sm tracking-widest">
-              {lyrics?.plain ? lyrics.plain : "Sin letras"}
+            <div className="py-20 text-center text-[var(--text-muted)] uppercase font-black text-sm tracking-widest opacity-20">
+              {lyrics?.plain ? lyrics.plain : "Sin letras disponibles"}
             </div>
           )}
         </div>
@@ -264,15 +271,15 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
       {!isAutoScrolling && (
         <button
           onClick={() => setIsAutoScrolling(true)}
-          className="absolute bottom-12 right-12 bg-emerald-600 text-white px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl z-40 animate-pulse border border-emerald-400/20 active:scale-95"
+          className="absolute bottom-12 right-12 bg-emerald-600 text-white px-8 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl z-40 animate-pulse border border-emerald-400/20 active:scale-95"
         >
           Retomar Sincronización
         </button>
       )}
 
-      <div className="mt-4 pt-4 border-t border-white/5 text-center flex flex-col gap-1 items-center">
-        <p className="text-[8px] font-black text-white/20 uppercase tracking-widest italic">MUSICSCRIPT LYRICS SYSTEM v3.0</p>
-        <p className="text-[7px] font-bold text-emerald-500/30 uppercase tracking-[0.2em]">Powered by LYRICS.OVH & LRCLIB</p>
+      <div className="mt-4 pt-4 border-t border-[var(--border-color)] text-center flex flex-col gap-1.5 items-center">
+        <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] italic opacity-50">MUSICSCRIPT LYRICS SYSTEM v3.5</p>
+        <p className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.3em] opacity-40">Powered by Gemini AI & LRCLib</p>
       </div>
     </motion.div>
   );
