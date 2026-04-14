@@ -183,10 +183,10 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
           <motion.div 
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
-            className="hidden md:flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20 mr-4"
+            className="flex items-center gap-1.5 md:gap-2 bg-emerald-500/10 px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-emerald-500/20 mr-2 md:mr-4"
           >
-            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Traduciendo con Gemini...</span>
+            <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-[6px] md:text-[8px] font-black text-emerald-500 uppercase tracking-widest whitespace-nowrap">AI Traduciendo...</span>
           </motion.div>
         )}
 

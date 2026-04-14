@@ -130,7 +130,8 @@ export const useMusicPlayer = () => {
     const song = playlist.setCurrentById(id);
     if (song) {
       setCurrentSong(song);
-      if (isPlaying) play();
+      // UX FIXED: Always start playing when user explicitly selects a track
+      play();
     }
   };
 
